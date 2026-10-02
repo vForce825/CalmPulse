@@ -3,7 +3,7 @@ final class StressFirstTests: XCTestCase {
     @MainActor func testPrimaryStateAndDetailFlow() {
         let app = app(state: "steady"); app.launch()
         XCTAssertTrue(app.staticTexts["平稳"].waitForExistence(timeout: 10))
-        XCTAssertTrue(app.buttons["today.breathing"].exists)
+        XCTAssertTrue(app.buttons["today.breathing"].isHittable)
         XCTAssertFalse(app.staticTexts["SDNN"].exists)
         print("CALMPULSE_SCREENSHOT:phone-stress-steady:" + app.screenshot().pngRepresentation.base64EncodedString())
         app.buttons["stress.details"].tap()

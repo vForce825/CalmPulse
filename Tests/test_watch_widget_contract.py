@@ -23,7 +23,7 @@ class WatchWidgetContracts(unittest.TestCase):
             self.assertNotIn(family,watch)
     def test_widget_privacy_age_and_unavailable_contracts(self):
         source=self.source('Apps/WidgetShared/PulseWidgetView.swift')
-        for token in ['.privacySensitive()', 'observedAt', 'style: .relative','presentation.title','presentation.bandIndex','accessibilityLabel','widgetRenderingMode']:
+        for token in ['.privacySensitive()', 'observedAt', '.dateTime.hour().minute()','presentation.title','presentation.bandIndex','accessibilityLabel','widgetRenderingMode']:
             self.assertIn(token,source)
         self.assertNotIn('压力百分比',source)
     def test_watch_flows_are_local_and_lifecycle_aware(self):
@@ -41,7 +41,7 @@ class WatchWidgetContracts(unittest.TestCase):
     def test_watch_primary_card_keeps_age_action_and_details(self):
         source=self.source('Apps/Watch/CalmPulseApp.swift')
         primary=source.split('private struct WatchRecordDetailsView',1)[0]
-        for token in ['StressPresentation', 'presentation.title', 'presentation.explanation', 'presentation.observedAt', '做 1 分钟呼吸', 'watch.breathing', 'watch.details']:
+        for token in ['StressPresentation', 'presentation.title', 'presentation.compactExplanation', 'presentation.observedAt', '做 1 分钟呼吸', 'watch.breathing', 'watch.details']:
             self.assertIn(token,primary)
         for token in ['Text("SDNN")', '相对趋势', '次/分', 'Chart(']:
             self.assertNotIn(token,primary)

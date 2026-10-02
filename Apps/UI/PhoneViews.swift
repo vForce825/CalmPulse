@@ -29,17 +29,18 @@ struct TodayView: View {
     let model: AppController
     let testing: Bool
     @Environment(\.colorScheme) private var scheme
+    @Environment(\.dynamicTypeSize) private var typeSize
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
-                HStack {
+                if !typeSize.isAccessibilitySize { HStack {
                     VStack(alignment: .leading, spacing: 3) {
                         Text("留一点时间给自己").font(.title3.weight(.semibold))
-                        Text(Date(), format: .dateTime.month().day().weekday()).font(.caption).foregroundStyle(.secondary)
+                        Text(Date(), format: .dateTime.month().day().weekday().locale(Locale(identifier: "zh_Hans_CN"))).font(.caption).foregroundStyle(.secondary)
                     }
                     Spacer()
                     Image(systemName: "leaf").font(.title2).foregroundStyle(StressStyle.forest)
-                }.padding(.horizontal, 4)
+                }.padding(.horizontal, 4) }
                 if testing { Text("合成演示 · 非真实健康数据").font(.caption2).foregroundStyle(.secondary) }
                 StressHero(model: model)
                 TodayStressTimeline(model: model)

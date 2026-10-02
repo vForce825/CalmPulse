@@ -122,11 +122,11 @@ private struct WatchStressCard: View {
     var body: some View {
         TimelineView(.periodic(from: .now, by: 30)) { context in
             let presentation = StressPresentation(summary: model.summary, now: context.date, status: model.dataStatus)
-            VStack(alignment: .leading, spacing: 5) {
+            VStack(alignment: .leading, spacing: 4) {
                 HStack(spacing: 4) {
                     Image(systemName: presentation.bandIndex == nil ? "leaf" : "leaf.fill")
                         .foregroundStyle(StressStyle.color(presentation.bandIndex))
-                    Text(presentation.isInitial ? "压力参考 · 初步了解" : "最近一次 · 压力参考")
+                    Text(presentation.isInitial ? "初步压力参考" : "压力参考")
                         .foregroundStyle(.secondary)
                 }.font(.caption2)
                 Text(presentation.title).font(.system(.title2, design: .rounded, weight: .bold))
@@ -134,14 +134,13 @@ private struct WatchStressCard: View {
                     .accessibilityIdentifier("watch.stress.title")
                 if let observedAt = presentation.observedAt {
                     HStack(spacing: 2) {
-                        Text(observedAt, style: .relative).monospacedDigit()
-                        Text("前记录")
+                        Text(StressPresentation.ageText(observedAt: observedAt, now: context.date)).monospacedDigit()
                     }.font(.caption2).foregroundStyle(.secondary)
                 }
                 if presentation.bandIndex != nil {
                     StressBandScale(selected: presentation.bandIndex)
                 }
-                Text(presentation.explanation).font(.caption2).foregroundStyle(.secondary)
+                Text(presentation.compactExplanation).font(.caption2).foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
                 NavigationLink { BreathingView(model: model) } label: {
                     Label("做 1 分钟呼吸", systemImage: "wind")
@@ -150,7 +149,7 @@ private struct WatchStressCard: View {
                 .buttonStyle(.borderedProminent).tint(StressStyle.forest)
                 .accessibilityIdentifier("watch.breathing")
             }
-            .padding(10).frame(maxWidth: .infinity, alignment: .leading)
+            .padding(8).frame(maxWidth: .infinity, alignment: .leading)
             .background(StressStyle.color(presentation.bandIndex).opacity(0.13), in: RoundedRectangle(cornerRadius: 18))
         }
         .accessibilityIdentifier("watch.reading")

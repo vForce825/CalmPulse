@@ -59,9 +59,9 @@ struct StressHero: View {
         TimelineView(.periodic(from: .now, by: 30)) { context in
             let presentation = StressPresentation(summary: model.summary, now: context.date, status: model.dataStatus)
             VStack(spacing: 0) {
-                CalmLandscape(band: presentation.bandIndex).frame(height: typeSize.isAccessibilitySize ? 90 : 160)
+                if !typeSize.isAccessibilitySize { CalmLandscape(band: presentation.bandIndex).frame(height: 160) }
                 VStack(spacing: 13) {
-                    Text(presentation.isInitial ? "压力参考 · 初步了解" : "最近一次 · 压力参考")
+                    Text(presentation.isInitial ? "初步压力参考" : "压力参考")
                         .font(.subheadline.weight(.medium)).foregroundStyle(.secondary)
                     Text(presentation.title).font(.system(.largeTitle, design: .rounded, weight: .bold))
                         .multilineTextAlignment(.center).accessibilityIdentifier("stress.title")
@@ -69,8 +69,7 @@ struct StressHero: View {
                     if let time = presentation.observedAt {
                         HStack(spacing: 4) {
                             Image(systemName: "clock")
-                            Text(time, style: .relative)
-                            Text("前记录")
+                            Text(StressPresentation.ageText(observedAt: time, now: context.date))
                         }.font(.caption).foregroundStyle(.secondary)
                     }
                     StressBandScale(selected: presentation.bandIndex).padding(.horizontal, 28)

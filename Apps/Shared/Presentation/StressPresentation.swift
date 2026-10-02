@@ -17,6 +17,18 @@ public struct StressPresentation: Sendable {
         guard let score, (0...100).contains(score) else { return nil }
         return min(3, score / 25)
     }
+    public var compactExplanation: String {
+        guard let bandIndex else { return explanation }
+        return ["留意自己的感受就好", "按自己的节奏来", "给自己留一点空隙", "先缓一缓，也可以"][bandIndex]
+    }
+    public static func ageText(observedAt: Date, now: Date) -> String {
+        let age = now.timeIntervalSince(observedAt)
+        guard age.isFinite, age >= 0, age < Double(Int.max) else { return "时间待核对" }
+        if age < 60 { return "刚刚记录" }
+        if age < 3600 { return "\(Int(age / 60)) 分钟前记录" }
+        if age < 86400 { return "\(Int(age / 3600)) 小时前记录" }
+        return "\(Int(age / 86400)) 天前记录"
+    }
     public init(summary: StoredSummary?, now: Date, status: HealthDataStatus = .available, respectPrivacy: Bool = false) {
         var state: State = .missing
         var band: Int?

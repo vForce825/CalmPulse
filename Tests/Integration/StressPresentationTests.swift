@@ -54,4 +54,17 @@ final class StressPresentationTests: XCTestCase {
             XCTAssertEqual(StressPresentation.bandIndex(for: score), band)
         }
     }
+    func testAgeCopyUsesChineseMinutesAndRejectsFutureTime() {
+        XCTAssertEqual(StressPresentation.ageText(observedAt: now.addingTimeInterval(-724), now: now), "12 分钟前记录")
+        XCTAssertEqual(StressPresentation.ageText(observedAt: now.addingTimeInterval(-14400), now: now), "4 小时前记录")
+        XCTAssertEqual(StressPresentation.ageText(observedAt: now.addingTimeInterval(-30), now: now), "刚刚记录")
+        XCTAssertEqual(StressPresentation.ageText(observedAt: now.addingTimeInterval(30), now: now), "时间待核对")
+    }
+    func testCompactWatchGuidanceFitsOneShortSentence() {
+        for score in [12, 38, 62, 88] {
+            let value = StressPresentation(summary: summary(score), now: now)
+            XCTAssertLessThanOrEqual(value.compactExplanation.count, 12)
+            XCTAssertFalse(value.compactExplanation.isEmpty)
+        }
+    }
 }
