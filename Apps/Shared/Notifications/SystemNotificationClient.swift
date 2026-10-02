@@ -5,7 +5,11 @@ public struct SystemNotificationClient: NotificationClient {
     public init() {}
     public func isAuthorized() async -> Bool {
         let status = await UNUserNotificationCenter.current().notificationSettings().authorizationStatus
+        #if os(iOS)
         return status == .authorized || status == .provisional || status == .ephemeral
+        #else
+        return status == .authorized || status == .provisional
+        #endif
     }
     public func requestPermission() async throws -> Bool {
         try await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound])
