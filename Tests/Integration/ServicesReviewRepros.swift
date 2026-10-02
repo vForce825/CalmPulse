@@ -63,3 +63,17 @@ final class SourceSelectionReviewRepros: XCTestCase, @unchecked Sendable {
         XCTAssertEqual(state.settings.selectedSourceID, "bundle|watch-local-ID", "A phone-local HealthKit identifier is not a portable Watch selection")
     }
 }
+
+final class DeviceLocalSettingsTests: XCTestCase, @unchecked Sendable {
+    func testPhoneSettingsPreserveWatchPermissionAndRange() async throws {
+        let store = HistoryStore(directory: FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString))
+        try await store.update { $0.settings.requestedMetrics = [.sdnn,.sleep]; $0.settings.selectedRange = "year" }
+        var phone = AppSettings(); phone.revision = 1; phone.requestedMetrics = [.sdnn,.workout]
+        let envelope = SyncEnvelope(sourceDevice: .iPhone, settings: phone)
+        _ = try await SyncCoordinator(store: store).merge(envelope)
+        let state = try await store.snapshot()
+        XCTAssertEqual(state.settings.requestedMetrics, [.sdnn,.sleep]); XCTAssertEqual(state.settings.selectedRange, "year")
+        let repeatMerge = try await SyncCoordinator(store: store).merge(envelope)
+        XCTAssertFalse(repeatMerge.changed)
+    }
+}

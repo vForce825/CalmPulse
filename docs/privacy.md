@@ -6,7 +6,7 @@ All health processing, caches and habit logs stay on your iPhone and paired Appl
 
 Core permissions request SDNN and resting heart rate. Optional screens separately explain and request sleep, workouts/heart rate, activity, daylight and mindfulness. An empty response is labeled “暂未读到记录”; apps cannot discover whether read permission was refused. Foreground reconciliation replaces locally cached records with records currently visible from HealthKit. Observer/anchored queries handle incremental additions and deletions in the background.
 
-Cache files and local logs use complete-until-first-user-authentication protection and are excluded from device cloud backups. Before first unlock, unavailable protected data is not rendered as zero. Clearing local data never deletes Apple Health records; available health records may be read again on next refresh. Content-free deletion markers remain to prevent offline log resurrection.
+Cache files and local logs use complete-until-first-user-authentication protection and are excluded from device cloud backups. Before first unlock, unavailable protected data is not rendered as zero. Clearing local data never deletes Apple Health records; available health records may be read again on next refresh. Content-free deletion and notification-idempotence markers remain to prevent offline log resurrection.
 
 WatchConnectivity shares versioned settings, minimal peer summaries and local habit logs only with the paired device. Device-local HealthKit source identifiers are not portable settings. Peer summaries remain separate from local assessments, widgets and notification decisions. Out-of-order/replayed log changes are merged deterministically, with deletion winning equal revisions.
 

@@ -5,7 +5,7 @@ import WellnessServices
 extension HabitKind {
     var title: String { switch self { case .mood: "情绪"; case .waterML: "饮水"; case .caffeineMG: "咖啡因"; case .breathingSeconds: "呼吸" } }
     var symbol: String { switch self { case .mood: "face.smiling"; case .waterML: "drop"; case .caffeineMG: "cup.and.saucer"; case .breathingSeconds: "wind" } }
-    var unit: String { switch self { case .mood: "1–5"; case .waterML: "mL"; case .caffeineMG: "mg"; case .breathingSeconds: "秒" } }
+    var unit: String { switch self { case .mood: "分（1–5）"; case .waterML: "mL"; case .caffeineMG: "mg"; case .breathingSeconds: "秒" } }
     var initialValue: Double { switch self { case .mood: 3; case .waterML: 250; case .caffeineMG: 80; case .breathingSeconds: 60 } }
 }
 extension WellnessBand {

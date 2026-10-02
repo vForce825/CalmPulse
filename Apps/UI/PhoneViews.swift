@@ -5,8 +5,12 @@ import WellnessServices
 struct PhoneRootView: View {
     let runtime: AppRuntime
     @Environment(\.dynamicTypeSize) private var systemTypeSize
+    @Environment(\.colorScheme) private var colorScheme
     private var model: AppController { runtime.model }
-    private var tint: Color { switch model.settings.theme { case "forest": .green; case "dusk": .indigo; default: .teal } }
+    private var tint: Color {
+        if colorScheme == .dark { return model.settings.theme == "forest" ? .mint : model.settings.theme == "dusk" ? .purple : .cyan }
+        switch model.settings.theme { case "forest": return Color(red: 0.12, green: 0.4, blue: 0.22); case "dusk": return .indigo; default: return Color(red: 0, green: 0.4, blue: 0.43) }
+    }
     var body: some View {
         TabView {
             NavigationStack { TodayView(model: model, testing: runtime.testing) }.tabItem { Label("今日", systemImage: "sun.horizon") }

@@ -61,3 +61,13 @@ extension AppControllerTests {
         let reloaded = try await store.snapshot(); XCTAssertNil(reloaded.summary); XCTAssertTrue(reloaded.samples.isEmpty)
     }
 }
+extension AppControllerTests {
+    func testWatchCanPersistLocalTrendRangeWithoutChangingNotificationAuthority() async throws {
+        let store = HistoryStore(directory: FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString))
+        let model = AppController(repository: EmptyRepository(), store: store, supported: [], device: .watch)
+        await model.selectRange("year")
+        XCTAssertEqual(model.settings.selectedRange, "year")
+        let state = try await store.snapshot(); XCTAssertEqual(state.settings.revision, 0)
+        XCTAssertEqual(state.settings.notifications.owner, .watch)
+    }
+}

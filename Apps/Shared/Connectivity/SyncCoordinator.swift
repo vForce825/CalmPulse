@@ -22,12 +22,16 @@ public actor SyncCoordinator {
         guard envelope.schemaVersion == 1 else { throw SyncError.unsupportedSchema }
         return try await store.update { state in
             var changed = false
-            if envelope.sourceDevice == .iPhone, let settings = envelope.settings,
-               settings.revision >= state.settings.revision, settings != state.settings {
-                let localSource = state.settings.selectedSourceID
-                state.settings = settings; state.settings.selectedSourceID = localSource
-                state.summary?.hideValues = settings.hideWidgetValues; state.peerSummary?.hideValues = settings.hideWidgetValues
-                changed = true
+            if envelope.sourceDevice == .iPhone, var settings = envelope.settings,
+               settings.revision >= state.settings.revision {
+                settings.selectedSourceID = state.settings.selectedSourceID
+                settings.requestedMetrics = state.settings.requestedMetrics
+                settings.selectedRange = state.settings.selectedRange
+                if settings != state.settings {
+                    state.settings = settings
+                    state.summary?.hideValues = settings.hideWidgetValues; state.peerSummary?.hideValues = settings.hideWidgetValues
+                    changed = true
+                }
             }
             if var summary = envelope.summary,
                summary.assessment.version == "wellness-sdnn-v1", summary.sdnn.isFinite, summary.sdnn > 0,

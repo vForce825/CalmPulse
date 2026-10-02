@@ -29,7 +29,8 @@ public enum SampleNormalizer {
                 case .asleepCore: stage = .core
                 case .asleepDeep: stage = .deep
                 case .asleepREM: stage = .rem
-                default: stage = .asleepUnspecified
+                case .asleepUnspecified: stage = .asleepUnspecified
+                default: return nil
                 }
             }
         } else { return nil }
@@ -38,8 +39,10 @@ public enum SampleNormalizer {
         let device = sample.device
         let product = sample.sourceRevision.productType ?? "unknown"
         let isWatch = product.lowercased().contains("watch") || (device?.model?.lowercased().contains("watch") ?? false)
-        let sourceName = source.name + (device?.localIdentifier == nil ? " · 设备身份不可确认，不合并基线" : "")
-        return HealthSample(id: sample.uuid, kind: kind, sourceID: SourceIdentity.key(bundle: source.bundleIdentifier, localDeviceID: device?.localIdentifier, sampleID: sample.uuid),
+        let hardware = [product, device?.model ?? "", device?.hardwareVersion ?? ""].joined(separator: "|")
+        let nativeSource = SourceIdentity.nativeWatchSource(bundle: source.bundleIdentifier, isAppleWatch: isWatch, hardware: hardware)
+        let sourceName = source.name + (device?.localIdentifier == nil && kind == .sdnn ? (nativeSource == nil ? " · 设备身份不可确认，不合并基线" : " · 按原生Watch来源建基线") : "")
+        return HealthSample(id: sample.uuid, kind: kind, sourceID: SourceIdentity.key(for: kind, bundle: source.bundleIdentifier, localDeviceID: device?.localIdentifier, sampleID: sample.uuid, isAppleWatch: isWatch, hardware: hardware),
             start: sample.startDate, end: sample.endDate, value: value, sleepStage: stage,
             sourceName: sourceName, workoutType: workoutType, isAppleWatch: isWatch)
     }

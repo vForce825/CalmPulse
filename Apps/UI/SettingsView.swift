@@ -26,7 +26,7 @@ struct SettingsView: View {
                 Toggle("启用趋势提醒", isOn: Binding(get: { model.settings.notifications.enabled }, set: { enabled in Task { await runtime.enableNotifications(enabled) } }))
                 Picker("唯一提醒设备", selection: Binding(get: { model.settings.notifications.owner }, set: { owner in
                     if owner == .iPhone && runtime.watchInstalled { model.errorMessage = "Watch 应用已安装，请由 Watch 负责提醒；不用 Watch 应用时可明确切换到 iPhone。" }
-                    else { Task { await model.changeSettings { $0.notifications.owner = owner } } }
+                    else { Task { await runtime.selectNotificationOwner(owner) } }
                 })) {
                     Text("Apple Watch").tag(NotificationOwner.watch)
                     Text("仅 iPhone").tag(NotificationOwner.iPhone)
@@ -37,7 +37,7 @@ struct SettingsView: View {
                 Picker("静音结束", selection: Binding(get: { model.settings.notifications.quietEndHour }, set: { hour in Task { await model.changeSettings { $0.notifications.quietEndHour = hour } } })) {
                     ForEach(0..<24, id: \.self) { Text(String(format: "%02d:00", $0)).tag($0) }
                 }
-                Text("最近 6 小时的两条最新样本均在最高区间、最新不超过 3 小时，才有资格提示；最多每 2 小时一次。起止小时相同表示不设静音。不会自动切换提醒设备，也不绕过专注模式。")
+                Text("Watch 提醒还需在手表的“说明与同步”中允许本机通知。最近 6 小时的两条最新样本均在最高区间、最新不超过 3 小时，才有资格提示；最多每 2 小时一次。起止小时相同表示不设静音。不会自动切换提醒设备，也不绕过专注模式。")
                     .font(.caption).foregroundStyle(.secondary)
             }
             Section("显示与隐私") {
@@ -68,7 +68,7 @@ struct SettingsView: View {
             Section { Text("CalmPulse 1.0 · 原创设计 · MIT\n仅供个人健康参考").font(.caption).foregroundStyle(.secondary) }
         }.navigationTitle("设置")
             .onAppear { zones = model.settings.heartRateZoneBoundaries.map { $0.formatted(.number.grouping(.never)) }.joined(separator: ", ") }
-            .confirmationDialog("清除本机缓存和本地习惯日志？", isPresented: $clearing, titleVisibility: .visible) {
+            .alert("清除本机缓存和本地习惯日志？", isPresented: $clearing) {
                 Button("清除本地数据", role: .destructive) { Task { await model.clearLocalData() } }
                 Button("取消", role: .cancel) {}
             } message: { Text("此操作不删除 Apple Health 数据。日志删除会同步到配对设备。") }

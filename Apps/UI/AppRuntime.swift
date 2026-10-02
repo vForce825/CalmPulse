@@ -31,6 +31,11 @@ import WellnessServices
         model = AppController(repository: repository, store: store, supported: testing ? Set(MetricKind.allCases) : HealthKitRepository.supported, device: Self.device)
         notification = NotificationCoordinator(store: store, client: SystemNotificationClient(), device: Self.device)
         model.stateDidChange = { [weak self] in await self?.publishChanges() }
+        model.healthDidChange = { [weak self] assessments in
+            guard let self, !self.testing else { return }
+            do { try await self.notification.evaluate(assessments) }
+            catch { self.model.errorMessage = "提醒暂未发送，下一次新记录到达时会重新评估" }
+        }
     }
     var watchInstalled: Bool { bridge?.watchInstalled ?? false }
     func start() async {
@@ -42,7 +47,9 @@ import WellnessServices
                 guard let self else { return }
                 do { _ = try await sync.merge(envelope); await self.model.load(); await self.writeWidget() }
                 catch { await MainActor.run { self.model.errorMessage = "同步暂未完成，下次打开时会重试" } }
-            }, ready: { [weak self] in await self?.publishChanges() })
+            }, ready: { [weak self] in await self?.publishChanges() }, transferFailed: { [weak self] in
+                await self?.invalidateQueuedState()
+            })
             bridge?.start()
             await observe(); await model.refreshHealth()
         }
@@ -50,22 +57,33 @@ import WellnessServices
     func foreground() async { await start(); if !testing { await model.refreshHealth() } }
     func observe() async {
         guard !testing, let repository = repository as? HealthKitRepository else { return }
-        await repository.observe(model.settings.requestedMetrics) { [weak model] in await model?.refreshHealth(full: false) }
+        await repository.observe(model.settings.requestedMetrics) { [weak model] in
+            await model?.refreshHealth(full: false)
+            await model?.waitForRefreshCompletion()
+        }
     }
     func enableNotifications(_ enabled: Bool) async {
-        if enabled {
+        if enabled && model.settings.notifications.owner == Self.device {
             do {
                 guard try await SystemNotificationClient().requestPermission() else { model.errorMessage = "系统通知未启用。可在系统设置中调整。"; return }
             } catch { model.errorMessage = "暂时无法启用通知"; return }
         }
         await model.changeSettings { $0.notifications.enabled = enabled }
     }
+    func selectNotificationOwner(_ owner: NotificationOwner) async {
+        if owner == Self.device && model.settings.notifications.enabled {
+            do {
+                guard try await SystemNotificationClient().requestPermission() else { model.errorMessage = "系统通知未启用，提醒设备尚未切换"; return }
+            } catch { model.errorMessage = "暂时无法切换提醒设备"; return }
+        }
+        await model.changeSettings { $0.notifications.owner = owner }
+    }
+    private func invalidateQueuedState() { lastQueued = nil }
     private func publishChanges() async {
         await writeWidget(); await observe()
         guard !testing else { return }
         do {
             let state = try await store.snapshot()
-            try await notification.evaluate(state.assessments)
             let habits = state.habits.sorted { $0.id.uuidString < $1.id.uuidString }
             let all = SyncEnvelope(sourceDevice: Self.device, settings: Self.device == .iPhone ? state.settings : nil,
                                    summary: state.summary, habitChanges: habits)

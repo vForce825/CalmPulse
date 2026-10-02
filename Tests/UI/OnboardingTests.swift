@@ -12,8 +12,10 @@ final class OnboardingTests: XCTestCase {
         for _ in 0..<5 { if app.buttons["settings.clear"].isHittable { break }; app.swipeUp() }
         XCTAssertTrue(app.buttons["settings.clear"].exists)
         app.buttons["settings.clear"].tap()
-        XCTAssertTrue(app.buttons["取消"].exists)
-        app.buttons["取消"].tap()
+        print("CALMPULSE_CLEAR_DIALOG:" + app.debugDescription)
+        let cancel = app.buttons["取消"].waitForExistence(timeout: 3) ? app.buttons["取消"] : app.buttons["Cancel"]
+        XCTAssertTrue(cancel.waitForExistence(timeout: 3))
+        cancel.tap()
         XCTAssertTrue(app.buttons["settings.clear"].exists)
     }
 }

@@ -31,3 +31,12 @@ Quantity activity samples crossing midnight are apportioned by elapsed time, exp
 Local water, caffeine and breathing entries are summed per civil day. Mood's daily value is its median because the scale is ordinal. UUID revisions are resolved before aggregation; a tombstone wins equal revisions and deleted, negative or non-finite entries are excluded. No log on a day is missing data, not zero consumption.
 
 Habit comparisons pair recorded habit days with one source's daily median SDNN. At least fourteen paired civil days, at least five days in each group and actual variation in both measures are required. Groups are split at the median daily habit value: lower-or-equal versus higher. Reports show both group counts, both SDNN medians and the signed higher-group-minus-lower-group median difference. Otherwise the result is information insufficient. Every comparison is labelled "相关不代表因果" (association does not imply causation). These observational summaries cannot establish causality or diagnose a condition.
+
+## Native Watch source identity compatibility
+
+A nonempty `HKDevice.localIdentifier` takes precedence, and remains device-local. When it is absent, SDNN records may share a source only if Watch metadata is positive and the complete native-source bundle suffix in `com.apple.health.<UUID>` parses as a UUID; product/model/hardware metadata is included where available. This is an observed-format compatibility heuristic, not an Apple guarantee that the bundle is a physical-watch identifier. All other unidentified SDNN records remain isolated by sample UUID and do not build a combined baseline. Non-baseline activity metrics use a stable producer fallback so missing device metadata does not discard repeated steps/workouts.
+
+Apple documents source bundle identifiers for apps and supported Bluetooth devices, and describes local identifiers as hardware-local. Paired-device and watch-replacement behavior must still be verified on actual hardware before claiming that physical provenance is confirmed.
+
+- https://developer.apple.com/documentation/healthkit/hksource/bundleidentifier
+- https://developer.apple.com/documentation/healthkit/hkdevice/localidentifier

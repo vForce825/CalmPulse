@@ -21,7 +21,7 @@ targets:
   CalmPulse-iOS:
     type: application
     platform: iOS
-    sources: [Apps/iOS, Apps/UI]
+    sources: [Apps/iOS, Apps/UI, Apps/WidgetShared, Tests/VisualSupport]
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.vforce825.calmpulse
@@ -40,7 +40,7 @@ targets:
   CalmPulse-Watch:
     type: application
     platform: watchOS
-    sources: [Apps/Watch, Apps/UI]
+    sources: [Apps/Watch, Apps/UI, Apps/WidgetShared, Tests/VisualSupport]
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.vforce825.calmpulse.watch

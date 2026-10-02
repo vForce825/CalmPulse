@@ -10,7 +10,15 @@ import WellnessServices
 
     var body: some Scene {
         WindowGroup {
-            WatchHomeView(runtime: runtime)
+            Group {
+                #if DEBUG
+                if runtime.testing && ProcessInfo.processInfo.environment["CALMPULSE_WIDGET_GALLERY"] == "1" {
+                    WidgetVerificationGallery()
+                } else { WatchHomeView(runtime: runtime) }
+                #else
+                WatchHomeView(runtime: runtime)
+                #endif
+            }
                 .task { await runtime.start() }
                 .onChange(of: scenePhase) { _, phase in
                     if phase == .active { Task { await runtime.foreground() } }

@@ -8,6 +8,7 @@ public struct WidgetState: Sendable {
     public init(summary: StoredSummary?, now: Date, protectedDataAvailable: Bool) {
         guard protectedDataAvailable else { label = "解锁后查看"; return }
         guard let summary else { label = "暂未读到记录"; return }
+        guard summary.assessment.observedAt <= now, summary.assessment.observedAt.timeIntervalSince1970.isFinite else { label = "时间待校正"; return }
         observedAt = summary.assessment.observedAt
         let age = now.timeIntervalSince(summary.assessment.observedAt)
         label = age > 10_800 ? "历史读数" : "最近读数"

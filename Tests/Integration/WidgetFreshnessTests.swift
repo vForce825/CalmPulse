@@ -23,3 +23,10 @@ final class WidgetFreshnessTests: XCTestCase {
         XCTAssertNil(hidden.score); XCTAssertNil(hidden.sdnn)
     }
 }
+extension WidgetFreshnessTests {
+    func testFutureTimestampIsNeverPresentedAsCurrentValue() {
+        let state = WidgetState(summary: summary(age: -60), now: now, protectedDataAvailable: true)
+        XCTAssertNil(state.score); XCTAssertNil(state.sdnn); XCTAssertNil(state.nextTransition)
+        XCTAssertEqual(state.label, "时间待校正")
+    }
+}

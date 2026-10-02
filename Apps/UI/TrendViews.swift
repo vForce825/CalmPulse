@@ -26,7 +26,7 @@ import WellnessServices
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
                 CPTrendRangeControls(range: Binding(get: { selectedRange }, set: { range in
-                    Task { await model.changeSettings { $0.selectedRange = range.rawValue } }
+                    Task { await model.selectRange(range.rawValue) }
                 }), anchor: $anchor, choosingDate: $choosingDate, calendar: calendar)
                 CPTrendCard {
                     Label("个人 SDNN 趋势", systemImage: "waveform.path")

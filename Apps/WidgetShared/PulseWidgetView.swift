@@ -6,6 +6,22 @@ struct PulseWidgetView: View {
     let entry: PulseEntry
     @Environment(\.widgetFamily) private var family
     @Environment(\.widgetRenderingMode) private var renderingMode
+    @Environment(\.isLuminanceReduced) private var isLuminanceReduced
+    var body: some View {
+        PulseWidgetContent(entry: entry, family: family)
+            .privacySensitive()
+            .containerBackground(for: .widget) {
+                if renderingMode == .fullColor && !isLuminanceReduced {
+                    LinearGradient(colors: [Color.teal.opacity(0.13), .clear], startPoint: .topLeading, endPoint: .bottomTrailing)
+                } else { Color.clear }
+            }
+    }
+}
+
+struct PulseWidgetContent: View {
+    let entry: PulseEntry
+    let family: WidgetFamily
+    @Environment(\.widgetRenderingMode) private var renderingMode
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.isLuminanceReduced) private var isLuminanceReduced
 
@@ -41,13 +57,6 @@ struct PulseWidgetView: View {
             }
         }
         .privacySensitive()
-        .containerBackground(for: .widget) {
-            if renderingMode == .fullColor && !isLuminanceReduced {
-                LinearGradient(colors: [accent.opacity(0.13), Color.clear], startPoint: .topLeading, endPoint: .bottomTrailing)
-            } else {
-                Color.clear
-            }
-        }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("CalmPulse，" + accessibilitySummary)
     }

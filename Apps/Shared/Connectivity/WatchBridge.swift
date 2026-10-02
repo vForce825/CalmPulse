@@ -5,8 +5,9 @@ import Foundation
 public final class WatchBridge: NSObject, WCSessionDelegate, @unchecked Sendable {
     private let receive: @Sendable (SyncEnvelope) async -> Void
     private let ready: @Sendable () async -> Void
-    public init(receive: @escaping @Sendable (SyncEnvelope) async -> Void, ready: @escaping @Sendable () async -> Void) {
-        self.receive = receive; self.ready = ready; super.init()
+    private let transferFailed: @Sendable () async -> Void
+    public init(receive: @escaping @Sendable (SyncEnvelope) async -> Void, ready: @escaping @Sendable () async -> Void, transferFailed: @escaping @Sendable () async -> Void = {}) {
+        self.receive = receive; self.ready = ready; self.transferFailed = transferFailed; super.init()
     }
     public func start() {
         guard WCSession.isSupported() else { return }
@@ -41,9 +42,9 @@ public final class WatchBridge: NSObject, WCSessionDelegate, @unchecked Sendable
     public func session(_ session: WCSession, didFinish userInfoTransfer: WCSessionUserInfoTransfer, error: Error?) {
         guard error != nil, let data = userInfoTransfer.userInfo["payload"] as? Data else { return }
         let attempt = (userInfoTransfer.userInfo["attempt"] as? Int ?? 0) + 1
-        guard attempt <= 3 else { return } // Next foreground reconciliation is the eventual recovery path.
+        guard attempt <= 3 else { Task { await transferFailed() }; return } // Invalidate runtime dedup so next foreground can reconcile.
         DispatchQueue.global().asyncAfter(deadline: .now() + Double(1 << attempt)) {
-            guard WCSession.default.activationState == .activated else { return }
+            guard WCSession.default.activationState == .activated else { Task { await self.transferFailed() }; return }
             WCSession.default.transferUserInfo(["payload": data, "attempt": attempt])
         }
     }
