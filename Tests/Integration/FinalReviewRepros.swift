@@ -59,8 +59,10 @@ private actor FinalReviewEmptyRepository: HealthRepository {
 
 private actor FinalReviewNotificationRecorder: NotificationClient {
     var scheduled: [UUID] = []
-    func isAuthorized() async -> Bool { true }
+    var authorizationChecks = 0
+    func isAuthorized() async -> Bool { authorizationChecks += 1; return true }
     func schedule(sampleID: UUID) async throws { scheduled.append(sampleID) }
+    func cancel(sampleID: UUID) async { scheduled.removeAll { $0 == sampleID } }
 }
 
 private actor FinalReviewGatedRepository: HealthRepository {
@@ -88,10 +90,11 @@ extension FinalReviewRepros {
         let input = [now.addingTimeInterval(-60), now.addingTimeInterval(-3600)].map {
             WellnessAssessment(score: 90, sourceID: "synthetic-watch", sampleID: UUID(), observedAt: $0)
         }
-        try await store.update { $0.settings.notifications = NotificationSettings(enabled: true, owner: .watch, quietStartHour: 0, quietEndHour: 0) }
+        try await store.update { $0.settings.notifications = NotificationSettings(enabled: true, owner: .watch, quietStartHour: 0, quietEndHour: 0); $0.assessments = input }
         let coordinator = NotificationCoordinator(store: store, client: client, device: .watch)
         try await coordinator.evaluate(input, now: now)
         try await store.clearLocalData()
+        try await store.update { $0.assessments = input }
         try await coordinator.evaluate(input, now: now.addingTimeInterval(60))
         let sent = await client.scheduled
         XCTAssertEqual(sent.count, 1, "Clearing cache lets identical reading notify again after one minute")
@@ -122,7 +125,7 @@ extension FinalReviewRepros {
         let input = [now.addingTimeInterval(-60), now.addingTimeInterval(-3600)].map {
             WellnessAssessment(score: 90, sourceID: "synthetic-watch", sampleID: UUID(), observedAt: $0)
         }
-        try await store.update { $0.settings.notifications = NotificationSettings(enabled: true, owner: .watch, quietStartHour: 22, quietEndHour: 10) }
+        try await store.update { $0.settings.notifications = NotificationSettings(enabled: true, owner: .watch, quietStartHour: 22, quietEndHour: 10); $0.assessments = input }
         let coordinator = NotificationCoordinator(store: store, client: client, device: .watch)
         try await coordinator.evaluate(input, now: now, calendar: calendar)
         try await store.update { $0.settings.theme = "forest" }
@@ -142,6 +145,7 @@ private actor ReReviewPausedNotificationClient: NotificationClient {
         return await withCheckedContinuation { gate = $0 }
     }
     func schedule(sampleID: UUID) async throws { sent.append(sampleID) }
+    func cancel(sampleID: UUID) async { sent.removeAll { $0 == sampleID } }
     func hasEntered() -> Bool { entered }
     func release() { gate?.resume(returning: true); gate = nil }
 }
@@ -187,7 +191,7 @@ extension FinalReviewRepros {
     func testClearDuringNotificationPermissionLookupCannotSchedule() async throws {
         let store = store(), now = Date(), client = ReReviewPausedNotificationClient()
         let input = [now, now.addingTimeInterval(-3600)].map { WellnessAssessment(score: 90, sourceID: "synthetic", sampleID: UUID(), observedAt: $0) }
-        try await store.update { $0.settings.notifications = NotificationSettings(enabled: true, owner: .watch, quietStartHour: 0, quietEndHour: 0) }
+        try await store.update { $0.settings.notifications = NotificationSettings(enabled: true, owner: .watch, quietStartHour: 0, quietEndHour: 0); $0.assessments = input }
         let coordinator = NotificationCoordinator(store: store, client: client, device: .watch)
         let evaluation = Task { try await coordinator.evaluate(input, now: now) }
         while !(await client.hasEntered()) { await Task.yield() }
@@ -204,5 +208,106 @@ extension FinalReviewRepros {
         while !(await repo.beganQuery()) { await Task.yield() }
         await model.clearLocalData(); await repo.release(); await refresh.value
         let state = try await store.snapshot(); XCTAssertTrue(state.samples.isEmpty); XCTAssertNil(state.summary)
+    }
+}
+
+extension FinalReviewRepros {
+    func testClearedAssessmentQueuedBeforeInputClaimCannotSchedule() async throws {
+        let store = store(), now = Date(), client = FinalReviewNotificationRecorder()
+        let input = [now.addingTimeInterval(-60), now.addingTimeInterval(-3600)].map {
+            WellnessAssessment(score: 90, sourceID: "synthetic-watch", sampleID: UUID(), observedAt: $0)
+        }
+        try await store.update {
+            $0.settings.notifications = NotificationSettings(enabled: true, owner: .watch, quietStartHour: 0, quietEndHour: 0)
+            $0.assessments = input
+        }
+        // A callback can already hold this value while queued to the coordinator/store.
+        try await store.clearLocalData()
+        try await NotificationCoordinator(store: store, client: client, device: .watch).evaluate(input, now: now)
+        let sent = await client.scheduled
+        XCTAssertTrue(sent.isEmpty, "An input invalidated before claiming was associated with the new post-clear generation")
+    }
+}
+
+private actor ScheduleGateClient: NotificationClient {
+    var entered = false
+    var gate: CheckedContinuation<Void, Never>?
+    var pending = Set<UUID>()
+    let fail: Bool
+    init(fail: Bool = false) { self.fail = fail }
+    func isAuthorized() async -> Bool { true }
+    func schedule(sampleID: UUID) async throws {
+        entered = true
+        await withCheckedContinuation { gate = $0 }
+        if fail { throw CocoaError(.fileWriteUnknown) }
+        pending.insert(sampleID)
+    }
+    func cancel(sampleID: UUID) async { pending.remove(sampleID) }
+    func release() { gate?.resume(); gate = nil }
+}
+extension FinalReviewRepros {
+    func testClearWhileSchedulingRetractsInvalidatedRequest() async throws {
+        let store = store(), now = Date(), client = ScheduleGateClient()
+        let input = [now, now.addingTimeInterval(-3600)].map { WellnessAssessment(score: 90, sourceID: "synthetic", sampleID: UUID(), observedAt: $0) }
+        try await store.update { $0.assessments = input; $0.settings.notifications = NotificationSettings(enabled: true, owner: .watch, quietStartHour: 0, quietEndHour: 0) }
+        let evaluation = Task { try await NotificationCoordinator(store: store, client: client, device: .watch).evaluate(input, now: now) }
+        while !(await client.entered) { await Task.yield() }
+        try await store.clearLocalData(); await client.release(); try await evaluation.value
+        let pending = await client.pending; XCTAssertTrue(pending.isEmpty)
+    }
+    func testDisableWhileSchedulingRetractsInvalidatedRequest() async throws {
+        let store = store(), now = Date(), client = ScheduleGateClient()
+        let input = [now, now.addingTimeInterval(-3600)].map { WellnessAssessment(score: 90, sourceID: "synthetic", sampleID: UUID(), observedAt: $0) }
+        try await store.update { $0.assessments = input; $0.settings.notifications = NotificationSettings(enabled: true, owner: .watch, quietStartHour: 0, quietEndHour: 0) }
+        let evaluation = Task { try await NotificationCoordinator(store: store, client: client, device: .watch).evaluate(input, now: now) }
+        while !(await client.entered) { await Task.yield() }
+        try await store.update { $0.settings.notifications.enabled = false }
+        await client.release(); try await evaluation.value
+        let pending = await client.pending; XCTAssertTrue(pending.isEmpty)
+    }
+    func testHealthDeletionWhileSchedulingRetractsInvalidatedRequest() async throws {
+        let store = store(), now = Date(), client = ScheduleGateClient()
+        let input = [now, now.addingTimeInterval(-3600)].map { WellnessAssessment(score: 90, sourceID: "synthetic", sampleID: UUID(), observedAt: $0) }
+        try await store.update { $0.assessments = input; $0.settings.notifications = NotificationSettings(enabled: true, owner: .watch, quietStartHour: 0, quietEndHour: 0) }
+        let evaluation = Task { try await NotificationCoordinator(store: store, client: client, device: .watch).evaluate(input, now: now) }
+        while !(await client.entered) { await Task.yield() }
+        try await store.apply(HealthChanges(kind: .sdnn, deletedIDs: [input[0].sampleID]))
+        await client.release(); try await evaluation.value
+        let pending = await client.pending; XCTAssertTrue(pending.isEmpty)
+    }
+    func testScheduleFailureCannotRollBackAcrossClear() async throws {
+        let store = store(), now = Date(), client = ScheduleGateClient(fail: true)
+        let input = [now, now.addingTimeInterval(-3600)].map { WellnessAssessment(score: 90, sourceID: "synthetic", sampleID: UUID(), observedAt: $0) }
+        try await store.update { $0.assessments = input; $0.settings.notifications = NotificationSettings(enabled: true, owner: .watch, quietStartHour: 0, quietEndHour: 0) }
+        let evaluation = Task { try await NotificationCoordinator(store: store, client: client, device: .watch).evaluate(input, now: now) }
+        while !(await client.entered) { await Task.yield() }
+        try await store.clearLocalData()
+        let cleared = try await store.snapshot()
+        await client.release(); do { try await evaluation.value } catch {}
+        let after = try await store.snapshot()
+        XCTAssertEqual(after.lastNotificationAt, cleared.lastNotificationAt)
+        XCTAssertEqual(after.deliveredSampleIDs, cleared.deliveredSampleIDs)
+    }
+}
+
+extension FinalReviewRepros {
+    func testClearAndReimportCannotScheduleSameSampleWhileOldSubmissionWaits() async throws {
+        let store = store(), now = Date(), oldClient = ScheduleGateClient()
+        let input = [now, now.addingTimeInterval(-3600)].map { WellnessAssessment(score: 90, sourceID: "synthetic", sampleID: UUID(), observedAt: $0) }
+        try await store.update { $0.assessments = input; $0.settings.notifications = NotificationSettings(enabled: true, owner: .watch, quietStartHour: 0, quietEndHour: 0) }
+        let evaluation = Task { try await NotificationCoordinator(store: store, client: oldClient, device: .watch).evaluate(input, now: now) }
+        while !(await oldClient.entered) { await Task.yield() }
+        try await store.clearLocalData()
+        try await store.update { $0.assessments = input; $0.settings.notifications.enabled = true }
+        let newClient = FinalReviewNotificationRecorder()
+        try await NotificationCoordinator(store: store, client: newClient, device: .watch).evaluate(input, now: now.addingTimeInterval(7201))
+        let checks = await newClient.authorizationChecks
+        XCTAssertEqual(checks, 0, "Consumed UUID must be rejected before authorization or policy evaluation")
+        let replacement = await newClient.scheduled
+        XCTAssertTrue(replacement.isEmpty, "Clear/reimport must preserve consumed UUIDs even after cooldown")
+        let cleared = try await store.snapshot()
+        XCTAssertTrue(cleared.evaluatedSampleIDs.contains(input[0].sampleID))
+        await oldClient.release(); try await evaluation.value
+        let remaining = await oldClient.pending; XCTAssertTrue(remaining.isEmpty)
     }
 }

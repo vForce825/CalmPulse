@@ -52,17 +52,21 @@ public actor HistoryStore {
         var state = try load()
         guard expectedClearEpoch == nil || state.clearEpoch == expectedClearEpoch else { return false }
         state.healthGeneration = UUID()
-        if replacingKind { state.samples.removeAll { $0.kind == changes.kind } }
+        let replacesKind = replacingKind || changes.replacesKind
+        if replacesKind { state.samples.removeAll { $0.kind == changes.kind } }
+        if let lower = changes.retentionStart {
+            state.samples.removeAll { $0.kind == changes.kind && $0.end < lower }
+        }
         let deleted = Set(changes.deletedIDs)
         state.deletedHealthIDs.formUnion(deleted)
         if let peer = state.peerSummary, deleted.contains(peer.assessment.sampleID) { state.peerSummary = nil }
         var samples = Dictionary(state.samples.map { ($0.id, $0) }, uniquingKeysWith: { _,new in new })
         for id in deleted { samples.removeValue(forKey: id) }
-        for sample in changes.inserted where !deleted.contains(sample.id) { samples[sample.id] = sample }
+        for sample in changes.inserted where !deleted.contains(sample.id) && (changes.retentionStart.map { sample.end >= $0 } ?? true) { samples[sample.id] = sample }
         state.samples = samples.values.sorted { $0.start < $1.start }
         state.anchors[changes.kind] = changes.newAnchor
         // A deletion can change every percentile baseline, not just the deleted input's score.
-        if replacingKind || !changes.deletedIDs.isEmpty { state.assessments = []; state.summary = nil }
+        if replacesKind || !changes.deletedIDs.isEmpty { state.assessments = []; state.summary = nil }
         try save(state)
         return true
     }

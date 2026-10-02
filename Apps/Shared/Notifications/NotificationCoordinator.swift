@@ -3,6 +3,7 @@ import WellnessCore
 public protocol NotificationClient: Sendable {
     func isAuthorized() async -> Bool
     func schedule(sampleID: UUID) async throws
+    func cancel(sampleID: UUID) async
 }
 public actor NotificationCoordinator {
     private let store: HistoryStore
@@ -12,9 +13,14 @@ public actor NotificationCoordinator {
         self.store = store; self.client = client; self.device = device
     }
     public func evaluate(_ assessments: [WellnessAssessment], now: Date = .now, calendar: Calendar = .current) async throws {
-        guard let latest = assessments.max(by: { $0.observedAt < $1.observedAt }) else { return }
+        var seen = Set<UUID>()
+        let candidates = Array(assessments.filter { $0.observedAt <= now && now.timeIntervalSince($0.observedAt) <= 21_600 }
+            .sorted { $0.observedAt == $1.observedAt ? $0.sampleID.uuidString < $1.sampleID.uuidString : $0.observedAt > $1.observedAt }
+            .filter { seen.insert($0.sampleID).inserted }.prefix(2))
+        guard let latest = candidates.first else { return }
         let claim = try await store.update { current -> NotificationInputClaim? in
-            guard current.evaluatedSampleIDs.insert(latest.sampleID).inserted,
+            guard candidates.allSatisfy({ current.assessments.contains($0) }),
+                  current.evaluatedSampleIDs.insert(latest.sampleID).inserted,
                   !current.deletedHealthIDs.contains(latest.sampleID),
                   current.settings.selectedSourceID == nil || current.settings.selectedSourceID == latest.sourceID else { return nil }
             return NotificationInputClaim(generation: current.healthGeneration, clearEpoch: current.clearEpoch, selectedSourceID: current.settings.selectedSourceID)
@@ -27,7 +33,8 @@ public actor NotificationCoordinator {
         guard case .send(let sampleID) = decision else { return }
         let evaluatingDevice = device
         let reserved = try await store.update { current -> Bool in
-            guard claim.matches(current), !current.deletedHealthIDs.contains(sampleID) else { return false }
+            guard claim.matches(current), !current.deletedHealthIDs.contains(sampleID),
+                  candidates.allSatisfy({ current.assessments.contains($0) }) else { return false }
             var currentSettings = current.settings.notifications; currentSettings.evaluatingDevice = evaluatingDevice
             guard NotificationPolicy().decision(recent: assessments, settings: currentSettings, lastSentAt: current.lastNotificationAt, now: now, calendar: calendar).shouldSend else { return false }
             guard !current.deliveredSampleIDs.contains(sampleID),
@@ -35,9 +42,24 @@ public actor NotificationCoordinator {
             current.deliveredSampleIDs.insert(sampleID); current.lastNotificationAt = now; return true
         }
         guard reserved else { return }
-        do { try await client.schedule(sampleID: sampleID) }
+        do {
+            try await client.schedule(sampleID: sampleID)
+            // UN notification submission is asynchronous and cannot share a transaction
+            // with storage. Retract a request invalidated while submission was suspended.
+            let completed = try await store.snapshot()
+            var completedSettings = completed.settings.notifications
+            completedSettings.evaluatingDevice = device
+            let stillValid = claim.matches(completed)
+                && !completed.deletedHealthIDs.contains(sampleID)
+                && candidates.allSatisfy { completed.assessments.contains($0) }
+                && NotificationPolicy().decision(recent: candidates, settings: completedSettings,
+                    lastSentAt: state.lastNotificationAt, now: now, calendar: calendar).shouldSend
+            if !stillValid { await client.cancel(sampleID: sampleID) }
+        }
         catch {
+            await client.cancel(sampleID: sampleID)
             try await store.update { current in
+                guard claim.matches(current) else { return }
                 current.deliveredSampleIDs.remove(sampleID)
                 if current.lastNotificationAt == now { current.lastNotificationAt = state.lastNotificationAt }
             }

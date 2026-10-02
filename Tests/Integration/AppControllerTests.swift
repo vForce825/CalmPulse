@@ -71,3 +71,11 @@ extension AppControllerTests {
         XCTAssertEqual(state.settings.notifications.owner, .watch)
     }
 }
+extension AppControllerTests {
+    func testClearChangesNavigationPrivacyEpoch() async {
+        let model = AppController(repository: EmptyRepository(), store: HistoryStore(directory: FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)), supported: [], device: .iPhone)
+        await model.load(); let before = model.clearEpoch
+        await model.clearLocalData()
+        XCTAssertNotNil(before); XCTAssertNotNil(model.clearEpoch); XCTAssertNotEqual(before, model.clearEpoch)
+    }
+}

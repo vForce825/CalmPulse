@@ -45,7 +45,7 @@ struct ReadingView: View {
                     }
                 } else {
                     Text("SDNN").font(.title3)
-                    Text(model.dataStatus.message).font(.title2.bold())
+                    Text(model.currentReadingMessage).font(.title2.bold())
                     Text("有记录时显示毫秒值；基线充足后再计算个人相对趋势。")
                         .font(.subheadline).foregroundStyle(.secondary)
                 }

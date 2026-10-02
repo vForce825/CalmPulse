@@ -62,7 +62,7 @@ struct SettingsView: View {
             Section("你的数据由你掌握") {
                 NavigationLink("解释与隐私") { PrivacyView() }
                 Button("清除本地缓存与日志", role: .destructive) { clearing = true }.accessibilityIdentifier("settings.clear")
-                Text("不会删除 Apple Health 原始记录。下一次刷新可重新读取健康记录；删除标记用于防止离线日志复活。")
+                Text("不会删除 Apple Health 原始记录，下次刷新可重新读取。为防止离线日志复活和重复提醒，会保留删除标记（标识、类型、时间与修订）、提醒去重标识及冷却时间，不保留测量值或日志备注。")
                     .font(.caption).foregroundStyle(.secondary)
             }
             Section { Text("CalmPulse 1.0 · 原创设计 · MIT\n仅供个人健康参考").font(.caption).foregroundStyle(.secondary) }
@@ -71,7 +71,7 @@ struct SettingsView: View {
             .alert("清除本机缓存和本地习惯日志？", isPresented: $clearing) {
                 Button("清除本地数据", role: .destructive) { Task { await model.clearLocalData() } }
                 Button("取消", role: .cancel) {}
-            } message: { Text("此操作不删除 Apple Health 数据。日志删除会同步到配对设备。") }
+            } message: { Text("此操作不删除 Apple Health 数据。日志删除会同步到配对设备；删除和提醒去重标记仍会保留，设置不变。") }
     }
 }
 struct PrivacyView: View {

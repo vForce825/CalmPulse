@@ -12,6 +12,7 @@
 		0685E14C9AA897CF56573C38 /* PulseWidgetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3F141E3E488A0623E3B2634 /* PulseWidgetView.swift */; };
 		06B018B641E2682F3AF0AC40 /* PhoneViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = B57369637F602BEC5190AFA9 /* PhoneViews.swift */; };
 		0976782128AF231BC8298F0F /* PulseTimelineProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8D46FAFDA11A645C4B9DA09 /* PulseTimelineProvider.swift */; };
+		2130F77D3716AB8A044FFE48 /* DataReadPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AA7ED05491DB9AFB50239AE /* DataReadPolicyTests.swift */; };
 		282267F213CD51AE22E0AFBC /* PulseTimelineProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8D46FAFDA11A645C4B9DA09 /* PulseTimelineProvider.swift */; };
 		3AB61C9E82BFDFBE15567C0B /* TrendsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B01AEAC49D2CBB62DC9018DD /* TrendsTests.swift */; };
 		4192E7D2AB4C66DD02EA3E79 /* CalmPulse-WatchWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 7941F4BF6A11089C703E0B80 /* CalmPulse-WatchWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -24,6 +25,7 @@
 		5401F25D0E260F3019950C1B /* WidgetVerificationGallery.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3CF0E300A7671D3F5DEAC3E /* WidgetVerificationGallery.swift */; };
 		5B3BC883651AA0803FD76E58 /* WellnessServices in Frameworks */ = {isa = PBXBuildFile; productRef = 8B9F3910B383ED4CACB6A774 /* WellnessServices */; };
 		5BFF7C30F30F2A9B447D7DAE /* HealthRepositoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED82D0713541EB05AE9EEC9E /* HealthRepositoryTests.swift */; };
+		62A6E049D74838AEEAD5B177 /* WorkoutDetailTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8017DC989B6FEA9D97B28DCC /* WorkoutDetailTests.swift */; };
 		68960FDE064DD67ADC9B1CFA /* CommonViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81418EA046A92E6E2C7F03B4 /* CommonViews.swift */; };
 		6933FE735217648041330BE8 /* StorageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FDCE686162E4969FF1D53E0 /* StorageTests.swift */; };
 		6B2EE5F2650480EABB7BE391 /* WidgetFreshnessTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B1F9D0CDFD60C76CB33EB41 /* WidgetFreshnessTests.swift */; };
@@ -131,6 +133,7 @@
 /* Begin PBXFileReference section */
 		00C9F8833C4BA2A690BDCE27 /* HabitFlowTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HabitFlowTests.swift; sourceTree = "<group>"; };
 		0A56BB3C213FEF3726924D6F /* CalmPulse.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = CalmPulse.entitlements; sourceTree = "<group>"; };
+		0AA7ED05491DB9AFB50239AE /* DataReadPolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataReadPolicyTests.swift; sourceTree = "<group>"; };
 		0EF01AADD2E9C1EA60A9CF39 /* AppRuntime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppRuntime.swift; sourceTree = "<group>"; };
 		1FDCE686162E4969FF1D53E0 /* StorageTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageTests.swift; sourceTree = "<group>"; };
 		1FF6FC3B39247B754054C415 /* CalmPulse-iOS.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = "CalmPulse-iOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -142,6 +145,7 @@
 		5CCF656E1C38B166B280EBB2 /* WellnessCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = WellnessCore; path = Packages/WellnessCore; sourceTree = SOURCE_ROOT; };
 		7941F4BF6A11089C703E0B80 /* CalmPulse-WatchWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "CalmPulse-WatchWidgets.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
 		7C42D3E567D784D378C4B796 /* TrendViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrendViews.swift; sourceTree = "<group>"; };
+		8017DC989B6FEA9D97B28DCC /* WorkoutDetailTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutDetailTests.swift; sourceTree = "<group>"; };
 		81418EA046A92E6E2C7F03B4 /* CommonViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommonViews.swift; sourceTree = "<group>"; };
 		8512C5D63953F3D4337D4C6F /* WidgetGalleryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetGalleryTests.swift; sourceTree = "<group>"; };
 		8F43DEA15891E80FC2ACD2B7 /* CalmPulseApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalmPulseApp.swift; sourceTree = "<group>"; };
@@ -262,6 +266,7 @@
 			isa = PBXGroup;
 			children = (
 				EA0C5A66325E015454B22CAF /* AppControllerTests.swift */,
+				0AA7ED05491DB9AFB50239AE /* DataReadPolicyTests.swift */,
 				BB3D25FB4EE22789C1C3784C /* FinalReviewRepros.swift */,
 				ED82D0713541EB05AE9EEC9E /* HealthRepositoryTests.swift */,
 				454DAF5CDF52F58EBC11B15F /* NotificationCoordinatorTests.swift */,
@@ -271,6 +276,7 @@
 				1FDCE686162E4969FF1D53E0 /* StorageTests.swift */,
 				9B3E959EA3CDDFC08283EB0A /* SyncTests.swift */,
 				4B1F9D0CDFD60C76CB33EB41 /* WidgetFreshnessTests.swift */,
+				8017DC989B6FEA9D97B28DCC /* WorkoutDetailTests.swift */,
 			);
 			name = Integration;
 			path = Tests/Integration;
@@ -594,6 +600,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				444D3D5863006B61259A8C01 /* AppControllerTests.swift in Sources */,
+				2130F77D3716AB8A044FFE48 /* DataReadPolicyTests.swift in Sources */,
 				E5956052359120CC978B721B /* FinalReviewRepros.swift in Sources */,
 				5BFF7C30F30F2A9B447D7DAE /* HealthRepositoryTests.swift in Sources */,
 				C0CF4C8A874CAB32FACC5CB4 /* NotificationCoordinatorTests.swift in Sources */,
@@ -603,6 +610,7 @@
 				6933FE735217648041330BE8 /* StorageTests.swift in Sources */,
 				6ED5D0F9D8A9FE64773099B4 /* SyncTests.swift in Sources */,
 				6B2EE5F2650480EABB7BE391 /* WidgetFreshnessTests.swift in Sources */,
+				62A6E049D74838AEEAD5B177 /* WorkoutDetailTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -17,7 +17,7 @@ struct PhoneRootView: View {
             NavigationStack { TrendsView(model: model) }.tabItem { Label("趋势", systemImage: "chart.xyaxis.line") }
             NavigationStack { HabitsView(model: model) }.tabItem { Label("习惯", systemImage: "leaf") }
             NavigationStack { SettingsView(runtime: runtime) }.tabItem { Label("设置", systemImage: "slider.horizontal.3") }
-        }.tint(tint)
+        }.id(model.clearEpoch).tint(tint)
         .preferredColorScheme(runtime.testing && ProcessInfo.processInfo.environment["CALMPULSE_DARK"] == "1" ? .dark : nil)
         .environment(\.dynamicTypeSize, runtime.testing && ProcessInfo.processInfo.environment["CALMPULSE_LARGE"] == "1" ? .accessibility5 : systemTypeSize)
         .alert("提示", isPresented: Binding(get: { model.errorMessage != nil }, set: { if !$0 { model.errorMessage = nil } })) {

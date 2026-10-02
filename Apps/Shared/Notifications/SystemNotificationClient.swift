@@ -14,6 +14,12 @@ public struct SystemNotificationClient: NotificationClient {
     public func requestPermission() async throws -> Bool {
         try await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound])
     }
+    public func cancel(sampleID: UUID) async {
+        let identifier = "calmpulse-" + sampleID.uuidString
+        let center = UNUserNotificationCenter.current()
+        center.removePendingNotificationRequests(withIdentifiers: [identifier])
+        center.removeDeliveredNotifications(withIdentifiers: [identifier])
+    }
     public func schedule(sampleID: UUID) async throws {
         let content = UNMutableNotificationContent()
         content.title = "给自己片刻休息"

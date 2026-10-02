@@ -15,6 +15,11 @@ import WellnessCore
     public private(set) var breathing = BreathingSession()
     public private(set) var dataStatus: HealthDataStatus = .empty
     public private(set) var isRefreshing = false
+    public private(set) var clearEpoch: UUID?
+    public var currentReadingMessage: String {
+        if summary != nil { return HealthDataStatus.available.message }
+        return dataStatus == .protected || dataStatus == .failed ? dataStatus.message : "暂未读到记录"
+    }
     public var errorMessage: String?
     public var healthDidChange: (@MainActor @Sendable ([WellnessAssessment]) async -> Void)?
     private var calculationTask: Task<[WellnessAssessment], Never>?
@@ -27,12 +32,13 @@ import WellnessCore
     private let repository: any HealthRepository
     private let supported: Set<MetricKind>
     private let calendar: Calendar
-    public init(repository: any HealthRepository, store: HistoryStore, supported: Set<MetricKind>, device: NotificationOwner, calendar: Calendar = .current) {
+    public init(repository: any HealthRepository, store: HistoryStore, supported: Set<MetricKind>, device: NotificationOwner, calendar: Calendar = .autoupdatingCurrent) {
         self.repository = repository; self.store = store; self.supported = supported; self.device = device; self.calendar = calendar
     }
     public func load() async {
         do {
             let state = try await store.snapshot()
+            clearEpoch = state.clearEpoch
             samples = state.samples; habits = state.habits.filter { !$0.deleted }.sorted { $0.timestamp > $1.timestamp }
             assessments = state.assessments; settings = state.settings; summary = state.summary; breathing = state.breathing
             dataStatus = samples.isEmpty ? .empty : .available
@@ -89,7 +95,8 @@ import WellnessCore
         let preferred = captured.settings.selectedSourceID ?? health.filter { $0.kind == .sdnn && $0.isAppleWatch }.max(by: { $0.start < $1.start })?.sourceID
         let sdnn = health.filter { $0.kind == .sdnn && $0.sourceID == preferred && $0.value.isFinite && $0.value > 0 && $0.end <= Date() }.sorted { $0.start < $1.start }
         let workouts = health.filter { $0.kind == .workout }.map { WorkoutWindow(start: $0.start, end: $0.end, activityType: $0.workoutType) }
-        let now = Date(); let calendar = self.calendar
+        let now = Date(); var calendar = self.calendar
+        calendar.timeZone = self.calendar.timeZone
         calculationTask?.cancel()
         let task = Task.detached(priority: .userInitiated) {
             var window: [HealthSample] = []; var result: [WellnessAssessment] = []
@@ -128,6 +135,18 @@ import WellnessCore
         guard entry.revision < UInt64.max else { errorMessage = "记录版本已达上限"; return }
         let tombstone = HabitEntry(id: entry.id, kind: entry.kind, timestamp: entry.timestamp, value: nil, note: nil, revision: entry.revision + 1, origin: device.rawValue, deleted: true)
         do { try await store.upsertHabit(tombstone); await load(); await stateDidChange?() } catch { handle(error) }
+    }
+    public func loadWorkoutDetails(_ workout: WorkoutSummary) async throws -> WorkoutSummary? {
+        let before = try await store.snapshot()
+        guard before.settings.requestedMetrics.contains(.heartRate) else { return workout }
+        guard workout.end > workout.start,
+              let original = before.samples.first(where: { $0.id == workout.id && $0.kind == .workout }) else { return nil }
+        let range = DateInterval(start: workout.start, end: workout.end)
+        let heartRate = try await repository.readSamples(for: .heartRate, range: range)
+        let after = try await store.snapshot()
+        guard after.clearEpoch == before.clearEpoch, after.samples.contains(where: { $0.id == workout.id }) else { return nil }
+        return ActivitySummary().summarize(samples: [original] + heartRate, range: range, calendar: calendar,
+            zones: HeartRateZoneConfiguration(boundaries: after.settings.heartRateZoneBoundaries)).workouts.first
     }
     public func selectRange(_ range: String) async {
         guard ["day", "week", "month", "year"].contains(range) else { return }
@@ -178,7 +197,7 @@ import WellnessCore
         if let storageError = error as? StorageError {
             dataStatus = storageError == .protectedDataUnavailable ? .protected : .failed
             errorMessage = storageError == .protectedDataUnavailable ? "受保护数据暂不可读取，解锁后重试" : "本机数据格式暂不可读取，原文件未被覆盖"
-            samples = []; habits = []; summary = nil; assessments = []
+            clearEpoch = nil; samples = []; habits = []; summary = nil; assessments = []
         } else { errorMessage = "操作未完成，请稍后重试" }
     }
 }

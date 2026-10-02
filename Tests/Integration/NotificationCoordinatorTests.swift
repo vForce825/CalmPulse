@@ -8,6 +8,7 @@ private actor NotificationRecorder: NotificationClient {
     init(permitted: Bool) { self.permitted = permitted }
     func isAuthorized() async -> Bool { permitted }
     func schedule(sampleID: UUID) async throws { scheduled.append(sampleID) }
+    func cancel(sampleID: UUID) async { scheduled.removeAll { $0 == sampleID } }
 }
 final class NotificationCoordinatorTests: XCTestCase, @unchecked Sendable {
     let now = Date(timeIntervalSince1970: 1_759_406_400) // synthetic fixture, 2025 daytime UTC
@@ -19,6 +20,7 @@ final class NotificationCoordinatorTests: XCTestCase, @unchecked Sendable {
     }
     func testSameDecisionScheduledOnceAndPersistsAcrossCoordinator() async throws {
         let store = try await store(); let client = NotificationRecorder(permitted: true); let inputs = inputs()
+        try await store.update { $0.assessments = inputs }
         let first = NotificationCoordinator(store: store, client: client, device: .watch)
         try await first.evaluate(inputs, now: now)
         try await NotificationCoordinator(store: store, client: client, device: .watch).evaluate(inputs, now: now)
@@ -26,10 +28,12 @@ final class NotificationCoordinatorTests: XCTestCase, @unchecked Sendable {
     }
     func testNoAuthorizationAndPhoneCannotScheduleWatchOwnedNotice() async throws {
         let store = try await store(); let denied = NotificationRecorder(permitted: false)
-        try await NotificationCoordinator(store: store, client: denied, device: .watch).evaluate(inputs(), now: now)
+        let deniedInputs = inputs(); try await store.update { $0.assessments = deniedInputs }
+        try await NotificationCoordinator(store: store, client: denied, device: .watch).evaluate(deniedInputs, now: now)
         let noPermission = await denied.scheduled; XCTAssertTrue(noPermission.isEmpty)
         let allowed = NotificationRecorder(permitted: true)
-        try await NotificationCoordinator(store: store, client: allowed, device: .iPhone).evaluate(inputs(), now: now)
+        let phoneInputs = inputs(); try await store.update { $0.assessments = phoneInputs }
+        try await NotificationCoordinator(store: store, client: allowed, device: .iPhone).evaluate(phoneInputs, now: now)
         let wrongOwner = await allowed.scheduled; XCTAssertTrue(wrongOwner.isEmpty)
     }
 }

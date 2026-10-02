@@ -146,7 +146,7 @@ import WellnessServices
                 CPTrendRangeControls(range: $range, anchor: $anchor, choosingDate: $choosingDate, calendar: calendar)
                 Text("把日常记录放在一起看")
                     .font(.title2.bold()).accessibilityAddTraits(.isHeader)
-                Text("按所选日期汇总，只解释已有记录。可选健康类型会在你点选后申请读取，拒绝其中一项不影响其他功能。")
+                Text("按所选日期汇总，只解释已有记录。可选健康类型会在你点选后申请读取，拒绝其中一项不影响其他功能。日累计活动以每日总量呈现；心率常规缓存为近90天，打开旧运动详情时按需读取该时段。")
                     .font(.subheadline).foregroundStyle(.secondary)
                 sleepCard(sleep)
                 activityCard(activities, inputs: inputs)
@@ -269,7 +269,7 @@ import WellnessServices
                     .font(.headline)
                 ForEach(report.workouts.sorted { $0.start > $1.start }) { workout in
                     NavigationLink {
-                        CPTrendWorkoutDetail(workout: workout, sourceLabel: inputs.sourceName(workout.sourceID), zonesConfigured: !model.settings.heartRateZoneBoundaries.isEmpty)
+                        CPTrendWorkoutDetailLoader(model: model, workout: workout, sourceLabel: inputs.sourceName(workout.sourceID))
                     } label: {
                         VStack(alignment: .leading, spacing: 5) {
                             Text(CPTrendFormat.workoutName(workout.activityType)).font(.subheadline.weight(.semibold))
@@ -621,6 +621,29 @@ private struct CPTrendWeeklyDetail: View {
                 }
             }.padding()
         }.background(CPTrendPalette.canvas).navigationTitle("周报详情")
+    }
+}
+@MainActor private struct CPTrendWorkoutDetailLoader: View {
+    let model: AppController
+    let workout: WorkoutSummary
+    let sourceLabel: String
+    @State private var loaded: WorkoutSummary?
+    @State private var unavailable = false
+    @State private var error: String?
+    private var requestKey: String { workout.id.uuidString + model.settings.heartRateZoneBoundaries.map { String($0) }.joined(separator: ",") }
+    var body: some View {
+        VStack(spacing: 0) {
+            if unavailable { Text("这条记录已不在本机缓存").padding() }
+            else { CPTrendWorkoutDetail(workout: loaded ?? workout, sourceLabel: sourceLabel, zonesConfigured: !model.settings.heartRateZoneBoundaries.isEmpty) }
+            if let error { Text(error).font(.caption).foregroundStyle(.secondary).padding() }
+        }
+        .task(id: requestKey) {
+            do {
+                let detail = try await model.loadWorkoutDetails(workout)
+                guard !Task.isCancelled else { return }
+                loaded = detail; unavailable = detail == nil
+            } catch { self.error = "暂未读到此运动时段的心率记录，原始运动摘要仍可查看" }
+        }
     }
 }
 private struct CPTrendWorkoutDetail: View {

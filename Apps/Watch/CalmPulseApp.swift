@@ -120,7 +120,7 @@ private struct WatchHomeView: View {
             .sheet(item: $selectedLog) { kind in
                 WatchQuickLogView(model: model, kind: kind)
             }
-        }
+        }.id(model.clearEpoch)
     }
 
     @ViewBuilder private var restingHeartRate: some View {
@@ -417,6 +417,9 @@ private struct WatchInformationView: View {
                     Text("当前基线：" + range.start.formatted(.dateTime.year().month().day()) + " 至 " + range.end.formatted(.dateTime.year().month().day()))
                 }
                 Text("算法：" + (model.summary?.assessment.version ?? WellnessEngine.version))
+            }
+            Section("本机覆盖") {
+                Text("手表保留最近90天的健康缓存；完整SDNN、睡眠和日累计活动历史请在iPhone查看。记录覆盖不足会显示缺口。")
             }
             Section("权限") {
                 Text("首次只读取SDNN与静息心率。睡眠、活动等在对应页面另行请求。没有记录无法证明读取权限被拒绝。")
