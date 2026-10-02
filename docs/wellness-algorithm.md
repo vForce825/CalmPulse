@@ -40,3 +40,11 @@ Apple documents source bundle identifiers for apps and supported Bluetooth devic
 
 - https://developer.apple.com/documentation/healthkit/hksource/bundleidentifier
 - https://developer.apple.com/documentation/healthkit/hkdevice/localidentifier
+
+## Stress-first presentation
+
+The four existing relative bands are presented as 较放松 / 平稳 / 有些紧绷 / 压力偏高 under the explicit heading 压力参考. This is a presentation change, not a new or clinically validated stress model. It does not infer a person's actual emotion. Raw SDNN, source, numerical scale and sample coverage remain available in details. The home screen omits the numerical score to avoid suggesting an exact stress percentage.
+
+`StressPresentation` applies the same privacy, validity and age gates across surfaces. An observation strictly older than three hours becomes 等一条新记录 with no current band. Insufficient history, a currently unscorable observation, invalid time/value, protected data and hidden widget content remain distinct. Limited history is labelled 初步了解, which describes available history rather than statistical accuracy. The Today plot uses actual scored observations from the selected source only, does not join points or fill gaps, and does not infer duration spent stressed.
+
+The new decorative landscape is original SwiftUI vector artwork. Reference screenshots and personal readings are not repository assets. UI visual fixtures are explicitly synthetic and gated by DEBUG plus CALMPULSE_UI_TESTING; they never query a real health repository or publish widget data.

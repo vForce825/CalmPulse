@@ -5,8 +5,8 @@ final class OnboardingTests: XCTestCase {
         app.launchEnvironment["CALMPULSE_UI_TESTING"] = "1"; app.launchEnvironment["CALMPULSE_UI_TEST_NAMESPACE"] = UUID().uuidString
         app.launch()
         XCTAssertTrue(app.buttons["onboarding.readCore"].waitForExistence(timeout: 10))
-        XCTAssertTrue(app.staticTexts["暂未读到记录"].exists)
-        XCTAssertTrue(app.staticTexts["SDNN"].exists)
+        XCTAssertTrue(app.staticTexts["还没有可用记录"].exists)
+        XCTAssertFalse(app.staticTexts["SDNN"].exists)
         print("CALMPULSE_SCREENSHOT:phone-today:" + app.screenshot().pngRepresentation.base64EncodedString())
         app.tabBars.buttons["设置"].tap()
         for _ in 0..<5 { if app.buttons["settings.clear"].isHittable { break }; app.swipeUp() }

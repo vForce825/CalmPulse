@@ -5,16 +5,20 @@ public struct WidgetState: Sendable {
     public var label: String
     public var observedAt: Date?
     public var nextTransition: Date?
+    public let presentation: StressPresentation
     public init(summary: StoredSummary?, now: Date, protectedDataAvailable: Bool) {
-        guard protectedDataAvailable else { label = "解锁后查看"; return }
-        guard let summary else { label = "暂未读到记录"; return }
-        guard summary.assessment.observedAt <= now, summary.assessment.observedAt.timeIntervalSince1970.isFinite else { label = "时间待校正"; return }
-        observedAt = summary.assessment.observedAt
-        let age = now.timeIntervalSince(summary.assessment.observedAt)
-        label = age > 10_800 ? "历史读数" : "最近读数"
-        if age <= 10_800 { nextTransition = summary.assessment.observedAt.addingTimeInterval(10_801) }
-        if !summary.hideValues { score = summary.assessment.score; sdnn = summary.sdnn }
-        else { label = "已隐藏数值" }
+        presentation = StressPresentation(summary: summary, now: now,
+            status: protectedDataAvailable ? .available : .protected, respectPrivacy: true)
+        label = presentation.title
+        observedAt = presentation.observedAt
+        // Compatibility values stay available to callers, but never bypass the privacy/validity gate.
+        guard let summary, let observedAt else { return }
+        let age = now.timeIntervalSince(observedAt)
+        if age <= StressPresentation.freshnessLimit {
+            nextTransition = observedAt.addingTimeInterval(StressPresentation.freshnessLimit + 1)
+        }
+        score = summary.assessment.score
+        sdnn = summary.sdnn
     }
 }
 public struct WidgetCache: Codable, Sendable {

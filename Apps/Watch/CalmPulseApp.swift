@@ -38,21 +38,15 @@ private struct WatchHomeView: View {
         NavigationStack {
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 12) {
+                    WatchStressCard(model: model)
                     if runtime.testing {
                         Label("演示测试 · 无真实健康数据", systemImage: "testtube.2")
                             .font(.caption2).foregroundStyle(.secondary)
                     }
-                    if model.dataStatus == .protected {
-                        WatchMessageCard(title: "解锁后查看", message: "受保护数据暂不可读取，解锁后再试。", symbol: "lock.shield")
-                    } else if let summary = model.summary {
-                        WatchReadingCard(model: model, summary: summary)
-                    } else {
-                        WatchMessageCard(title: "暂未读到记录", message: "SDNN来自Apple Health。不同设备收到记录的时间可能不同。", symbol: "waveform.path")
-                    }
                     if !model.settings.requestedMetrics.contains(.sdnn) {
                         VStack(alignment: .leading, spacing: 7) {
-                            Text("先连接核心记录").font(.headline)
-                            Text("只读取SDNN与静息心率。不写入健康数据。")
+                            Text("开始了解自己的节奏").font(.headline)
+                            Text("读取心率变化与静息心率，记录留在设备上。")
                                 .font(.caption).foregroundStyle(.secondary)
                             Button {
                                 Task { await model.request([.sdnn, .restingHeartRate]) }
@@ -64,8 +58,12 @@ private struct WatchHomeView: View {
                         }
                         .watchCard()
                     }
-                    restingHeartRate
-                    briefTrend
+                    NavigationLink {
+                        WatchRecordDetailsView(model: model)
+                    } label: {
+                        Label("结果与记录", systemImage: "chart.xyaxis.line")
+                    }
+                    .accessibilityIdentifier("watch.details")
                     VStack(alignment: .leading, spacing: 8) {
                         Text("快速记录").font(.headline)
                         ForEach(WatchLogKind.allCases) { kind in
@@ -77,12 +75,6 @@ private struct WatchHomeView: View {
                             .accessibilityHint("仅记录到应用；系统允许时与配对iPhone同步")
                         }
                     }
-                    NavigationLink {
-                        BreathingView(model: model)
-                    } label: {
-                        Label("呼吸练习", systemImage: "wind")
-                    }
-                    .accessibilityIdentifier("watch.breathing")
                     NavigationLink {
                         HealthOverviewView(model: model)
                     } label: {
@@ -109,7 +101,7 @@ private struct WatchHomeView: View {
                         Text(error).font(.caption).foregroundStyle(.secondary)
                             .accessibilityIdentifier("watch.error")
                     }
-                    Text("一般健康参考，不用于医疗诊断。打开应用补查记录，后台刷新由系统安排。")
+                    Text("身体信号仅供参考，不能直接判断真实情绪，也不用于诊断。刷新只检查已有记录。")
                         .font(.caption2).foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
@@ -121,6 +113,66 @@ private struct WatchHomeView: View {
                 WatchQuickLogView(model: model, kind: kind)
             }
         }.id(model.clearEpoch)
+    }
+
+}
+
+private struct WatchStressCard: View {
+    let model: AppController
+    var body: some View {
+        TimelineView(.periodic(from: .now, by: 30)) { context in
+            let presentation = StressPresentation(summary: model.summary, now: context.date, status: model.dataStatus)
+            VStack(alignment: .leading, spacing: 5) {
+                HStack(spacing: 4) {
+                    Image(systemName: presentation.bandIndex == nil ? "leaf" : "leaf.fill")
+                        .foregroundStyle(StressStyle.color(presentation.bandIndex))
+                    Text(presentation.isInitial ? "压力参考 · 初步了解" : "最近一次 · 压力参考")
+                        .foregroundStyle(.secondary)
+                }.font(.caption2)
+                Text(presentation.title).font(.system(.title2, design: .rounded, weight: .bold))
+                    .fixedSize(horizontal: false, vertical: true)
+                    .accessibilityIdentifier("watch.stress.title")
+                if let observedAt = presentation.observedAt {
+                    HStack(spacing: 2) {
+                        Text(observedAt, style: .relative).monospacedDigit()
+                        Text("前记录")
+                    }.font(.caption2).foregroundStyle(.secondary)
+                }
+                if presentation.bandIndex != nil {
+                    StressBandScale(selected: presentation.bandIndex)
+                }
+                Text(presentation.explanation).font(.caption2).foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                NavigationLink { BreathingView(model: model) } label: {
+                    Label("做 1 分钟呼吸", systemImage: "wind")
+                        .font(.caption.weight(.semibold)).frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.borderedProminent).tint(StressStyle.forest)
+                .accessibilityIdentifier("watch.breathing")
+            }
+            .padding(10).frame(maxWidth: .infinity, alignment: .leading)
+            .background(StressStyle.color(presentation.bandIndex).opacity(0.13), in: RoundedRectangle(cornerRadius: 18))
+        }
+        .accessibilityIdentifier("watch.reading")
+    }
+}
+
+/// The raw measurements and sparse chart are available one deliberate level below the status.
+private struct WatchRecordDetailsView: View {
+    let model: AppController
+    @Environment(\.colorScheme) private var colorScheme
+    private var accent: Color { colorScheme == .dark ? .cyan : .teal }
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 12) {
+                NavigationLink { StressDetailsView(model: model) } label: {
+                    Label("这次结果怎么看", systemImage: "info.circle")
+                }
+                ReadingView(model: model)
+                restingHeartRate
+                briefTrend
+            }.padding(.horizontal, 4)
+        }.navigationTitle("结果与记录")
     }
 
     @ViewBuilder private var restingHeartRate: some View {
@@ -182,89 +234,6 @@ private struct WatchHomeView: View {
             }
         }
         .watchCard()
-    }
-}
-
-private struct WatchReadingCard: View {
-    let model: AppController
-    let summary: StoredSummary
-    @Environment(\.colorScheme) private var colorScheme
-    private var assessment: WellnessAssessment { summary.assessment }
-    private var sourceName: String {
-        model.samples.first(where: { $0.id == assessment.sampleID })?.sourceName ?? assessment.sourceID
-    }
-    private var freshnessDates: [Date] {
-        let now = Date(), boundary = assessment.observedAt.addingTimeInterval(10_801)
-        return boundary > now ? [now, boundary] : [now]
-    }
-    private var baselineText: String {
-        switch assessment.confidence {
-        case .insufficient: "建立基线中"
-        case .limited: "基线有限"
-        case .established: "基线已建立"
-        }
-    }
-    private var bandText: String {
-        switch assessment.band {
-        case .low: "相对较低"
-        case .moderate: "中等"
-        case .high: "相对较高"
-        case .highest: "明显偏高"
-        case nil: "信息不足"
-        }
-    }
-
-    var body: some View {
-        TimelineView(.explicit(freshnessDates)) { context in
-            let historical = context.date.timeIntervalSince(assessment.observedAt) > 10_800
-            VStack(alignment: .leading, spacing: 8) {
-                Label(historical ? "历史读数" : "最近读数", systemImage: historical ? "clock.arrow.circlepath" : "waveform.path.ecg")
-                    .font(.caption).foregroundStyle(.secondary)
-                Text("SDNN").font(.headline)
-                HStack(alignment: .firstTextBaseline, spacing: 4) {
-                    Text(summary.sdnn, format: .number.precision(.fractionLength(1)))
-                        .font(.largeTitle).fontWeight(.semibold).monospacedDigit()
-                        .foregroundStyle(colorScheme == .dark ? Color.cyan : Color.teal)
-                        .minimumScaleFactor(0.75)
-                    Text("毫秒").font(.caption)
-                }
-                if let score = assessment.score {
-                    Text("相对趋势 \(score) / 100").font(.headline).monospacedDigit()
-                    Text(bandText).font(.caption)
-                } else {
-                    Text("个人趋势：信息不足").font(.caption)
-                }
-                HStack(spacing: 3) {
-                    Text("距采集").font(.caption2)
-                    Text(assessment.observedAt, style: .timer).font(.caption2).monospacedDigit()
-                }
-                Text(assessment.observedAt, format: .dateTime.month().day().hour().minute().second())
-                    .font(.caption2).foregroundStyle(.secondary)
-                Text("来源：" + sourceName).font(.caption2).foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-                Divider()
-                Text(baselineText).font(.caption).fontWeight(.medium)
-                Text("过去28个完整日：\(assessment.baselineDayCount)天 · \(assessment.baselineSampleCount)条")
-                    .font(.caption2).foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-                if assessment.confidence == .insufficient {
-                    Text("需至少7个历史日与20条有效样本").font(.caption2).foregroundStyle(.secondary)
-                }
-                if !model.settings.requestedMetrics.contains(.workout) {
-                    Text("未排除运动影响").font(.caption2).foregroundStyle(.secondary)
-                } else {
-                    Text("仅排除已读到的运动影响").font(.caption2).foregroundStyle(.secondary)
-                }
-                if historical {
-                    Text("超过3小时，仅供历史参考").font(.caption2).foregroundStyle(.secondary)
-                }
-                Text("高分仅表示SDNN相对本人历史偏低；并非压力百分比。")
-                    .font(.caption2).foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-            .watchCard()
-        }
-        .accessibilityIdentifier("watch.reading")
     }
 }
 
@@ -413,6 +382,9 @@ private struct WatchInformationView: View {
                 Text("个人趋势比较此前28个完整本地日，每个有记录日等权。当天不加入基线。")
                 Text("高分只代表本次SDNN相对本人历史偏低。不是心理压力测量，也不是疾病概率。")
                 Text("采样时刻、佩戴、睡眠和运动会影响可比性。样本之间不推断连续状态。")
+                if let assessment = model.summary?.assessment {
+                    Text("比较依据：\(assessment.baselineDayCount)个历史日 · \(assessment.baselineSampleCount)条记录")
+                }
                 if let range = model.summary?.assessment.baselineRange {
                     Text("当前基线：" + range.start.formatted(.dateTime.year().month().day()) + " 至 " + range.end.formatted(.dateTime.year().month().day()))
                 }
@@ -470,21 +442,6 @@ private struct WatchInformationView: View {
         .font(.caption)
         .navigationTitle("说明与同步")
         .task { notificationAuthorized = await SystemNotificationClient().isAuthorized() }
-    }
-}
-
-private struct WatchMessageCard: View {
-    let title: String
-    let message: String
-    let symbol: String
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Image(systemName: symbol).font(.title2).foregroundStyle(.teal).accessibilityHidden(true)
-            Text(title).font(.headline)
-            Text(message).font(.caption).foregroundStyle(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
-        }
-        .watchCard()
     }
 }
 

@@ -1,13 +1,15 @@
 # CalmPulse
 
-A Chinese-first, local-first **iOS 27 / watchOS 27** wellness app with an explainable personal SDNN scale. Original code is MIT licensed; this is independent of StressWatch and does not reproduce its proprietary algorithm or assets.
+A Chinese-first, local-first **iOS 27 / watchOS 27** wellness app that puts a plain-language pressure reference first, with an explainable personal SDNN scale behind the detail view. Original code is MIT licensed; this is independent of StressWatch and does not reproduce its proprietary algorithm or assets.
 
-**Automated simulator verification passed.** [Verified implementation 59690d1](https://github.com/vForce825/CalmPulse/actions/runs/37006610791) passed the Xcode 27 platform/build/test gates. See the [verification report](docs/verification.md) for counts and scope. Unsigned simulator builds are not installable device releases; [hardware checks](docs/device-checklist.md) remain.
+**Previous implementation simulator verification:** [Verified implementation 59690d1](https://github.com/vForce825/CalmPulse/actions/runs/37006610791) passed the Xcode 27 platform/build/test gates. See the [verification report](docs/verification.md) for counts and scope. Unsigned simulator builds are not installable device releases; [hardware checks](docs/device-checklist.md) remain.
 
 ## Included
 
 - iPhone Today, Trends, Habits and Settings; Watch latest reading, short history, quick logs, editable history and breathing with optional haptics
-- SDNN milliseconds, source/time/data age, source-isolated 28-complete-day baseline, confidence/coverage and historical labels
+- A shared stress-first presentation on iPhone, Watch and widgets: four plain-language tendencies, reading time, a breathing action and sparse daily history
+- Explicit learning, historical, unavailable, invalid, protected and private states; readings older than three hours never appear as current
+- Advanced detail retains SDNN milliseconds, source, the source-isolated 28-complete-day baseline and coverage; no change to the existing calculation
 - Day/week/month/year sparse charts, sample details, sample-band shares and weekly reports
 - Sleep/stages, daily activity, daylight, mindfulness, workouts and user-defined heart-rate zones
 - Local mood/water/caffeine/breathing logs and conservative associations requiring sufficient paired days

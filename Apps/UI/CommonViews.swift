@@ -9,7 +9,7 @@ extension HabitKind {
     var initialValue: Double { switch self { case .mood: 3; case .waterML: 250; case .caffeineMG: 80; case .breathingSeconds: 60 } }
 }
 extension WellnessBand {
-    var title: String { switch self { case .low: "相对较低"; case .moderate: "中等"; case .high: "相对较高"; case .highest: "明显偏高" } }
+    var title: String { switch self { case .low: "较放松"; case .moderate: "平稳"; case .high: "有些紧绷"; case .highest: "压力偏高" } }
 }
 struct PulseCard<Content: View>: View {
     let title: String
@@ -23,33 +23,26 @@ struct PulseCard<Content: View>: View {
 struct ReadingView: View {
     let model: AppController
     var body: some View {
-        TimelineView(.periodic(from: .now, by: 60)) { context in
-            VStack(alignment: .leading, spacing: 14) {
-                HStack { Image(systemName: "waveform.path.ecg"); Text("个人趋势指标").font(.headline); Spacer() }
-                if let summary = model.summary {
-                    HStack(alignment: .firstTextBaseline) {
-                        Text(summary.assessment.score.map(String.init) ?? "—")
-                            .font(.system(.largeTitle, design: .rounded, weight: .bold)).monospacedDigit()
-                        Text(summary.assessment.band?.title ?? "正在建立基线").font(.subheadline)
-                    }.accessibilityElement(children: .combine)
+        TimelineView(.periodic(from: .now, by: 30)) { context in
+            let presentation = StressPresentation(summary: model.summary, now: context.date, status: model.dataStatus)
+            VStack(alignment: .leading, spacing: 12) {
+                Text(presentation.title).font(.headline)
+                Text(presentation.explanation).font(.subheadline).foregroundStyle(.secondary)
+                if let summary = model.summary, presentation.state != .locked {
                     Text("SDNN  \(summary.sdnn.formatted(.number.precision(.fractionLength(1)))) ms").font(.title3).monospacedDigit()
-                    Label(context.date.timeIntervalSince(summary.assessment.observedAt) > 10_800 ? "历史读数" : "最近读数", systemImage: "clock")
-                        .font(.caption).foregroundStyle(.secondary)
                     Text(summary.assessment.observedAt, format: .dateTime.month().day().hour().minute()).font(.caption)
-                    Text("\(summary.assessment.baselineDayCount) 个基线日 · \(summary.assessment.baselineSampleCount) 条样本")
-                        .font(.caption).foregroundStyle(.secondary)
-                    Text(summary.assessment.confidence == .established ? "基线已建立" : summary.assessment.confidence == .limited ? "基线有限" : "至少需要 7 个历史日、20 条有效样本")
-                        .font(.caption)
-                    if let source = model.samples.first(where: { $0.id == summary.assessment.sampleID }) {
-                        Text("来源：\(source.sourceName ?? "所选健康数据来源")").font(.caption).foregroundStyle(.secondary)
+                    if presentation.state == .reading || presentation.state == .historical {
+                        if let score = summary.assessment.score {
+                            Text("\(presentation.state == .historical ? "历史相对刻度" : "相对刻度")：\(score) / 100").font(.caption)
+                        }
                     }
-                } else {
-                    Text("SDNN").font(.title3)
-                    Text(model.currentReadingMessage).font(.title2.bold())
-                    Text("有记录时显示毫秒值；基线充足后再计算个人相对趋势。")
-                        .font(.subheadline).foregroundStyle(.secondary)
+                    Text("\(summary.assessment.baselineDayCount) 个历史记录日 · \(summary.assessment.baselineSampleCount) 条记录")
+                        .font(.caption).foregroundStyle(.secondary)
+                    if let source = model.samples.first(where: { $0.id == summary.assessment.sampleID }) {
+                        Text("来源：" + (source.sourceName ?? "所选健康数据来源")).font(.caption).foregroundStyle(.secondary)
+                    }
                 }
-                Text("这不是压力百分比，也不是医学判断").font(.caption).foregroundStyle(.secondary)
+                Text("相对刻度不是压力百分比，也不是医学判断。").font(.caption).foregroundStyle(.secondary)
             }
         }
     }

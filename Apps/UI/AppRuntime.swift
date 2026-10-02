@@ -40,6 +40,12 @@ import WellnessServices
     var watchInstalled: Bool { bridge?.watchInstalled ?? false }
     func start() async {
         guard !started else { return }; started = true
+        #if DEBUG
+        if testing, let state = ProcessInfo.processInfo.environment["CALMPULSE_DEMO_STATE"] {
+            do { try await StressDemonstration.seed(state, store: store) }
+            catch { model.errorMessage = "演示记录未能准备完成" }
+        }
+        #endif
         await model.load()
         if !testing {
             let sync = SyncCoordinator(store: store)

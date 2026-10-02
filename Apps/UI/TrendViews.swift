@@ -9,7 +9,7 @@ import WellnessServices
 @MainActor struct TrendsView: View {
     let model: AppController
     @State private var anchor = Date.now
-    @State private var chartMetric: CPTrendChartMetric = .sdnn
+    @State private var chartMetric: CPTrendChartMetric = .relative
     @State private var choosingDate = false
 
     private var selectedRange: CPTrendRange {
@@ -29,14 +29,14 @@ import WellnessServices
                     Task { await model.selectRange(range.rawValue) }
                 }), anchor: $anchor, choosingDate: $choosingDate, calendar: calendar)
                 CPTrendCard {
-                    Label("个人 SDNN 趋势", systemImage: "waveform.path")
+                    Label("压力参考的变化", systemImage: "leaf")
                         .font(.headline)
-                    Text(inputs.sourceLabel).font(.subheadline).foregroundStyle(.secondary)
+                    Text("回看身体的节奏，也听听自己的感受").font(.subheadline).foregroundStyle(.secondary)
                     if report.points.isEmpty {
-                        CPTrendEmpty(title: "暂未读到记录", detail: "这个区间没有可用的 SDNN 样本。可以换个日期，或打开 Apple 健康查看已有记录。", symbol: "chart.xyaxis.line")
+                        CPTrendEmpty(title: "暂未读到记录", detail: "这个区间还没有可用记录。可以换个日期看看。", symbol: "chart.xyaxis.line")
                             .accessibilityIdentifier("trend.empty")
                     } else {
-                        CPTrendStatistics(report: report)
+                        if chartMetric == .sdnn { CPTrendStatistics(report: report) }
                         Picker("图表指标", selection: $chartMetric) {
                             ForEach(CPTrendChartMetric.allCases, id: \.self) { metric in
                                 Text(metric.title).tag(metric)
@@ -50,6 +50,7 @@ import WellnessServices
                             .font(.caption).foregroundStyle(.secondary)
                     }
                 }
+                DisclosureGroup("查看原始记录与比较依据") {
                 CPTrendCard {
                     CPTrendSectionTitle(title: "记录覆盖", symbol: "calendar.badge.checkmark")
                     CPTrendCoverageView(coverage: report.coverage)
@@ -114,6 +115,7 @@ import WellnessServices
                             .font(.caption).foregroundStyle(.secondary)
                     }
                 }.font(.subheadline)
+                }
             }.padding()
         }
         .background(CPTrendPalette.canvas)
@@ -394,36 +396,43 @@ private struct CPTrendDateSheet: View {
 // MARK: - Charts, coverage and sample shares
 
 private enum CPTrendChartMetric: String, CaseIterable {
-    case sdnn, relative
-    var title: String { self == .sdnn ? "SDNN（毫秒）" : "个人趋势指标" }
+    case relative, sdnn
+    var title: String { self == .sdnn ? "原始 HRV" : "压力参考" }
 }
 private struct CPTrendScatterChart: View {
     let report: TrendReport
     let metric: CPTrendChartMetric
-    private var points: [TrendPoint] { metric == .sdnn ? report.points : report.points.filter { $0.score != nil } }
+    private var points: [TrendPoint] { metric == .sdnn ? report.points : report.points.filter { StressPresentation.bandIndex(for: $0.score) != nil } }
     var body: some View {
         if points.isEmpty {
-            CPTrendEmpty(title: "信息不足", detail: "这个区间尚无可显示的个人趋势指标。可在逐条详情查看基线进度。", symbol: "chart.dots.scatter")
+            CPTrendEmpty(title: "信息不足", detail: "记录还不够了解你的日常节奏；原始记录仍可查看。", symbol: "chart.dots.scatter")
         } else {
             Chart(points) { point in
                 PointMark(x: .value("测量时间", point.observedAt),
-                    y: .value(metric.title, metric == .sdnn ? point.value : Double(point.score ?? 0)))
-                    .foregroundStyle(CPTrendPalette.accent)
-                    .symbolSize(28)
+                    y: .value(metric.title, metric == .sdnn ? point.value : Double((StressPresentation.bandIndex(for: point.score) ?? 0))))
+                    .foregroundStyle(metric == .sdnn ? CPTrendPalette.accent : StressStyle.color((StressPresentation.bandIndex(for: point.score) ?? 0)))
+                    .symbolSize(42)
                     .accessibilityLabel(Text(point.observedAt.formatted(date: .abbreviated, time: .shortened)))
-                    .accessibilityValue(Text(metric == .sdnn ? "SDNN \(CPTrendFormat.number(point.value)) 毫秒" : "个人趋势指标 \(point.score ?? 0)，满刻度 100"))
+                    .accessibilityValue(Text(metric == .sdnn ? "SDNN \(CPTrendFormat.number(point.value)) 毫秒" : StressPresentation.titles[(StressPresentation.bandIndex(for: point.score) ?? 0)]))
             }
             .chartXScale(domain: report.range.start...max(report.range.end, report.range.start.addingTimeInterval(1)))
-            .chartYScale(domain: 0...upperBound)
+            .chartYScale(domain: (metric == .relative ? -0.4 : 0)...upperBound)
             .chartXAxis { AxisMarks(values: .automatic(desiredCount: 4)) }
-            .chartYAxis { AxisMarks(position: .leading) }
+            .chartYAxis {
+                if metric == .relative {
+                    AxisMarks(position: .leading, values: [0, 1, 2, 3]) { value in
+                        AxisGridLine().foregroundStyle(.secondary.opacity(0.12))
+                        AxisValueLabel { if let i = value.as(Int.self) { Text(StressPresentation.titles[i]).font(.caption2) } }
+                    }
+                } else { AxisMarks(position: .leading) }
+            }
             .frame(height: 210)
             .accessibilityLabel(metric.title + "散点图")
             .accessibilityIdentifier("trend.scatterChart")
         }
     }
     private var upperBound: Double {
-        if metric == .relative { return 100 }
+        if metric == .relative { return 3.4 }
         let maximum = points.map(\.value).max() ?? 10
         return max(10, maximum <= Double.greatestFiniteMagnitude / 1.15 ? maximum * 1.15 : maximum)
     }
@@ -844,7 +853,7 @@ private enum CPTrendFormat {
         return Calendar.current.isDate(interval.start, inSameDayAs: last) ? firstString : "\(firstString) – \(last.formatted(date: .abbreviated, time: .omitted))"
     }
     static func band(_ band: WellnessBand) -> String {
-        switch band { case .low: "相对较低（0–24）"; case .moderate: "中等（25–49）"; case .high: "相对较高（50–74）"; case .highest: "明显偏高（75–100）" }
+        switch band { case .low: "较放松"; case .moderate: "平稳"; case .high: "有些紧绷"; case .highest: "压力偏高" }
     }
     static func confidence(_ confidence: BaselineConfidence) -> String {
         switch confidence { case .insufficient: "信息不足"; case .limited: "基线有限"; case .established: "基线已建立" }

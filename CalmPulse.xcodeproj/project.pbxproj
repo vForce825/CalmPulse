@@ -14,7 +14,9 @@
 		0976782128AF231BC8298F0F /* PulseTimelineProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8D46FAFDA11A645C4B9DA09 /* PulseTimelineProvider.swift */; };
 		2130F77D3716AB8A044FFE48 /* DataReadPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AA7ED05491DB9AFB50239AE /* DataReadPolicyTests.swift */; };
 		282267F213CD51AE22E0AFBC /* PulseTimelineProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8D46FAFDA11A645C4B9DA09 /* PulseTimelineProvider.swift */; };
+		39C8673BB612F96AEA90D03F /* StressFirstTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE3D80511666D62FE635AD9A /* StressFirstTests.swift */; };
 		3AB61C9E82BFDFBE15567C0B /* TrendsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B01AEAC49D2CBB62DC9018DD /* TrendsTests.swift */; };
+		3F8079DC129F42A13796E82B /* StressDemonstration.swift in Sources */ = {isa = PBXBuildFile; fileRef = F35CBE4127CC2F94A2DBA826 /* StressDemonstration.swift */; };
 		4192E7D2AB4C66DD02EA3E79 /* CalmPulse-WatchWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 7941F4BF6A11089C703E0B80 /* CalmPulse-WatchWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		444D3D5863006B61259A8C01 /* AppControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA0C5A66325E015454B22CAF /* AppControllerTests.swift */; };
 		4592E55258741DD7A5D2B436 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D020930A52E40A1EB4FFABE2 /* SettingsView.swift */; };
@@ -26,6 +28,7 @@
 		5B3BC883651AA0803FD76E58 /* WellnessServices in Frameworks */ = {isa = PBXBuildFile; productRef = 8B9F3910B383ED4CACB6A774 /* WellnessServices */; };
 		5BFF7C30F30F2A9B447D7DAE /* HealthRepositoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED82D0713541EB05AE9EEC9E /* HealthRepositoryTests.swift */; };
 		62A6E049D74838AEEAD5B177 /* WorkoutDetailTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8017DC989B6FEA9D97B28DCC /* WorkoutDetailTests.swift */; };
+		63E10FAC90B28AB87D73A659 /* StressPresentationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DD2D89B33DA4C43FF8C0C4B /* StressPresentationTests.swift */; };
 		68960FDE064DD67ADC9B1CFA /* CommonViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81418EA046A92E6E2C7F03B4 /* CommonViews.swift */; };
 		6933FE735217648041330BE8 /* StorageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FDCE686162E4969FF1D53E0 /* StorageTests.swift */; };
 		6B2EE5F2650480EABB7BE391 /* WidgetFreshnessTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B1F9D0CDFD60C76CB33EB41 /* WidgetFreshnessTests.swift */; };
@@ -41,6 +44,7 @@
 		8AF2F232C7D4E031D399EA18 /* WellnessServices in Frameworks */ = {isa = PBXBuildFile; productRef = 8225761256BC6591DC5C0829 /* WellnessServices */; };
 		92B93EE00A8FC152D0E5E37D /* PulseTimelineProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8D46FAFDA11A645C4B9DA09 /* PulseTimelineProvider.swift */; };
 		9315596804917A0C9FA255F0 /* WellnessCore in Frameworks */ = {isa = PBXBuildFile; productRef = 308DD599A48C0780A7FF2842 /* WellnessCore */; };
+		966492E99DF3C65E5B2AE181 /* StressDemonstration.swift in Sources */ = {isa = PBXBuildFile; fileRef = F35CBE4127CC2F94A2DBA826 /* StressDemonstration.swift */; };
 		9753CE5D0F3A0C88C15D0350 /* OnboardingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5EE0003428E721025FF213A /* OnboardingTests.swift */; };
 		985124C6F25F5615AD559E71 /* WellnessServices in Frameworks */ = {isa = PBXBuildFile; productRef = AD8A48931919D2553BD2B16C /* WellnessServices */; };
 		9AAC11C8A8DB1C1F4F57F8CF /* CalmPulseWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = F361E82E975CA7F105AE09CA /* CalmPulseWidget.swift */; };
@@ -48,10 +52,12 @@
 		A24358D5A4649F4E27095D79 /* WellnessServices in Frameworks */ = {isa = PBXBuildFile; productRef = F11F96A73D1A753FEFD03177 /* WellnessServices */; };
 		A96FE63D97741AC379506EEC /* CalmPulseWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE73259CC2559D9434A2C0E3 /* CalmPulseWidget.swift */; };
 		ACD5F1D2FCB3F7A14C42DD6F /* PulseWidgetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3F141E3E488A0623E3B2634 /* PulseWidgetView.swift */; };
+		ACE749C47E88489B39ABAB9B /* StressViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E562F865D14C36CB9C6A9ED /* StressViews.swift */; };
 		C0CF4C8A874CAB32FACC5CB4 /* NotificationCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 454DAF5CDF52F58EBC11B15F /* NotificationCoordinatorTests.swift */; };
 		C2823C3497735C1BA23CCE21 /* CalmPulseApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40A0D67ED5F7B11ECD5BB7AE /* CalmPulseApp.swift */; };
 		C58CE332C450887C2598A020 /* HabitFlowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00C9F8833C4BA2A690BDCE27 /* HabitFlowTests.swift */; };
 		C5F184A35D8934C49A92AC6F /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D020930A52E40A1EB4FFABE2 /* SettingsView.swift */; };
+		C5FA05B8CD7B06E31AEBC605 /* StressViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E562F865D14C36CB9C6A9ED /* StressViews.swift */; };
 		C8D166939E0BC7CCF1F3B382 /* CalmPulse-Watch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = F94A656C769C67DA76F4695D /* CalmPulse-Watch.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		CEA78AE52B8C01F9A843A8D3 /* WellnessCore in Frameworks */ = {isa = PBXBuildFile; productRef = F5F37A32CD28227D254E78A2 /* WellnessCore */; };
 		CF04D60C326116A14F437F69 /* WellnessCore in Frameworks */ = {isa = PBXBuildFile; productRef = 9DB8106D86DEED09DF718035 /* WellnessCore */; };
@@ -135,6 +141,7 @@
 		0A56BB3C213FEF3726924D6F /* CalmPulse.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = CalmPulse.entitlements; sourceTree = "<group>"; };
 		0AA7ED05491DB9AFB50239AE /* DataReadPolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataReadPolicyTests.swift; sourceTree = "<group>"; };
 		0EF01AADD2E9C1EA60A9CF39 /* AppRuntime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppRuntime.swift; sourceTree = "<group>"; };
+		1DD2D89B33DA4C43FF8C0C4B /* StressPresentationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StressPresentationTests.swift; sourceTree = "<group>"; };
 		1FDCE686162E4969FF1D53E0 /* StorageTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageTests.swift; sourceTree = "<group>"; };
 		1FF6FC3B39247B754054C415 /* CalmPulse-iOS.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = "CalmPulse-iOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		3285E4BBA7D40F5404D0E4C2 /* ServicesReviewRepros.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServicesReviewRepros.swift; sourceTree = "<group>"; };
@@ -143,6 +150,7 @@
 		454DAF5CDF52F58EBC11B15F /* NotificationCoordinatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationCoordinatorTests.swift; sourceTree = "<group>"; };
 		4B1F9D0CDFD60C76CB33EB41 /* WidgetFreshnessTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetFreshnessTests.swift; sourceTree = "<group>"; };
 		5CCF656E1C38B166B280EBB2 /* WellnessCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = WellnessCore; path = Packages/WellnessCore; sourceTree = SOURCE_ROOT; };
+		5E562F865D14C36CB9C6A9ED /* StressViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StressViews.swift; sourceTree = "<group>"; };
 		7941F4BF6A11089C703E0B80 /* CalmPulse-WatchWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "CalmPulse-WatchWidgets.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
 		7C42D3E567D784D378C4B796 /* TrendViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrendViews.swift; sourceTree = "<group>"; };
 		8017DC989B6FEA9D97B28DCC /* WorkoutDetailTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutDetailTests.swift; sourceTree = "<group>"; };
@@ -166,10 +174,12 @@
 		CF268C74AA9BE7F5D8B1D90D /* AccessibilityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessibilityTests.swift; sourceTree = "<group>"; };
 		D020930A52E40A1EB4FFABE2 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		DD61689FD6F2C7BB79EED24C /* CalmPulse.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = CalmPulse.entitlements; sourceTree = "<group>"; };
+		DE3D80511666D62FE635AD9A /* StressFirstTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StressFirstTests.swift; sourceTree = "<group>"; };
 		E5EE0003428E721025FF213A /* OnboardingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingTests.swift; sourceTree = "<group>"; };
 		EA0C5A66325E015454B22CAF /* AppControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppControllerTests.swift; sourceTree = "<group>"; };
 		ED82D0713541EB05AE9EEC9E /* HealthRepositoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthRepositoryTests.swift; sourceTree = "<group>"; };
 		EE67A2CBC37B6632ABD744D6 /* CalmPulseUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = CalmPulseUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		F35CBE4127CC2F94A2DBA826 /* StressDemonstration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StressDemonstration.swift; sourceTree = "<group>"; };
 		F361E82E975CA7F105AE09CA /* CalmPulseWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalmPulseWidget.swift; sourceTree = "<group>"; };
 		F3CF0E300A7671D3F5DEAC3E /* WidgetVerificationGallery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetVerificationGallery.swift; sourceTree = "<group>"; };
 		F8B648FAD35459F1ED850E8B /* CalmPulse.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = CalmPulse.entitlements; sourceTree = "<group>"; };
@@ -274,6 +284,7 @@
 				3285E4BBA7D40F5404D0E4C2 /* ServicesReviewRepros.swift */,
 				392EF1F19CC3C799D809D871 /* SourceIdentityTests.swift */,
 				1FDCE686162E4969FF1D53E0 /* StorageTests.swift */,
+				1DD2D89B33DA4C43FF8C0C4B /* StressPresentationTests.swift */,
 				9B3E959EA3CDDFC08283EB0A /* SyncTests.swift */,
 				4B1F9D0CDFD60C76CB33EB41 /* WidgetFreshnessTests.swift */,
 				8017DC989B6FEA9D97B28DCC /* WorkoutDetailTests.swift */,
@@ -302,6 +313,7 @@
 				81418EA046A92E6E2C7F03B4 /* CommonViews.swift */,
 				B57369637F602BEC5190AFA9 /* PhoneViews.swift */,
 				D020930A52E40A1EB4FFABE2 /* SettingsView.swift */,
+				5E562F865D14C36CB9C6A9ED /* StressViews.swift */,
 				7C42D3E567D784D378C4B796 /* TrendViews.swift */,
 			);
 			name = UI;
@@ -331,6 +343,7 @@
 		CA1F1561658FD93E7CCC05D7 /* VisualSupport */ = {
 			isa = PBXGroup;
 			children = (
+				F35CBE4127CC2F94A2DBA826 /* StressDemonstration.swift */,
 				F3CF0E300A7671D3F5DEAC3E /* WidgetVerificationGallery.swift */,
 			);
 			name = VisualSupport;
@@ -364,6 +377,7 @@
 				CF268C74AA9BE7F5D8B1D90D /* AccessibilityTests.swift */,
 				00C9F8833C4BA2A690BDCE27 /* HabitFlowTests.swift */,
 				E5EE0003428E721025FF213A /* OnboardingTests.swift */,
+				DE3D80511666D62FE635AD9A /* StressFirstTests.swift */,
 				B01AEAC49D2CBB62DC9018DD /* TrendsTests.swift */,
 				8512C5D63953F3D4337D4C6F /* WidgetGalleryTests.swift */,
 			);
@@ -548,6 +562,7 @@
 				8186283E75C37749D4C84DE3 /* AccessibilityTests.swift in Sources */,
 				C58CE332C450887C2598A020 /* HabitFlowTests.swift in Sources */,
 				9753CE5D0F3A0C88C15D0350 /* OnboardingTests.swift in Sources */,
+				39C8673BB612F96AEA90D03F /* StressFirstTests.swift in Sources */,
 				3AB61C9E82BFDFBE15567C0B /* TrendsTests.swift in Sources */,
 				843CC3E8A85B80C2F5EC9370 /* WidgetGalleryTests.swift in Sources */,
 			);
@@ -564,6 +579,8 @@
 				92B93EE00A8FC152D0E5E37D /* PulseTimelineProvider.swift in Sources */,
 				FC9180168F4A1526BDE8D109 /* PulseWidgetView.swift in Sources */,
 				C5F184A35D8934C49A92AC6F /* SettingsView.swift in Sources */,
+				966492E99DF3C65E5B2AE181 /* StressDemonstration.swift in Sources */,
+				ACE749C47E88489B39ABAB9B /* StressViews.swift in Sources */,
 				6F034768E87B696BD02A3F1E /* TrendViews.swift in Sources */,
 				7B58D3B9329393AE7DE87299 /* WidgetVerificationGallery.swift in Sources */,
 			);
@@ -580,6 +597,8 @@
 				D7689A214ABAC158B31058E5 /* PulseTimelineProvider.swift in Sources */,
 				7869FB5FE0AA9776B5C036A6 /* PulseWidgetView.swift in Sources */,
 				4592E55258741DD7A5D2B436 /* SettingsView.swift in Sources */,
+				3F8079DC129F42A13796E82B /* StressDemonstration.swift in Sources */,
+				C5FA05B8CD7B06E31AEBC605 /* StressViews.swift in Sources */,
 				FF187B8E41785E6E399A85E1 /* TrendViews.swift in Sources */,
 				5401F25D0E260F3019950C1B /* WidgetVerificationGallery.swift in Sources */,
 			);
@@ -608,6 +627,7 @@
 				7E04E714D493B423AA05E62C /* ServicesReviewRepros.swift in Sources */,
 				6C8C5443509FA7B2C6B65508 /* SourceIdentityTests.swift in Sources */,
 				6933FE735217648041330BE8 /* StorageTests.swift in Sources */,
+				63E10FAC90B28AB87D73A659 /* StressPresentationTests.swift in Sources */,
 				6ED5D0F9D8A9FE64773099B4 /* SyncTests.swift in Sources */,
 				6B2EE5F2650480EABB7BE391 /* WidgetFreshnessTests.swift in Sources */,
 				62A6E049D74838AEEAD5B177 /* WorkoutDetailTests.swift in Sources */,
