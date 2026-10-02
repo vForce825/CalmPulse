@@ -36,7 +36,7 @@ struct TodayView: View {
                 if !typeSize.isAccessibilitySize { HStack {
                     VStack(alignment: .leading, spacing: 3) {
                         Text("留一点时间给自己").font(.title3.weight(.semibold))
-                        Text(Date(), format: .dateTime.month().day().weekday().locale(Locale(identifier: "zh_Hans_CN"))).font(.caption).foregroundStyle(.secondary)
+                        Text(Date().formatted(.dateTime.month().day().weekday().locale(Locale(identifier: "zh_Hans_CN")))).font(.caption).foregroundStyle(.secondary).accessibilityIdentifier("today.date")
                     }
                     Spacer()
                     Image(systemName: "leaf").font(.title2).foregroundStyle(StressStyle.forest)

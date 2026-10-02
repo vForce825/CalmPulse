@@ -62,7 +62,7 @@ struct PulseWidgetContent: View {
                 Text(presentation.title).font(.caption2.weight(.semibold))
                     .multilineTextAlignment(.center).lineLimit(2)
                 if let observedAt = presentation.observedAt {
-                    Text(observedAt, format: .dateTime.hour().minute().locale(Locale(identifier: "zh_Hans_CN"))).font(.system(size: 10)).monospacedDigit()
+                    Text(observedAt.formatted(.dateTime.hour().minute().locale(Locale(identifier: "zh_Hans_CN")))).font(.system(size: 10)).monospacedDigit()
                 }
             }.padding(4).minimumScaleFactor(0.8)
         }
@@ -73,7 +73,7 @@ struct PulseWidgetContent: View {
     private var inlineText: Text {
         let title = Text(presentation.title)
         if let observedAt = presentation.observedAt {
-            return title + Text(" · ") + Text(observedAt, format: .dateTime.hour().minute().locale(Locale(identifier: "zh_Hans_CN"))) + Text("记录")
+            return title + Text(" · ") + Text(observedAt.formatted(.dateTime.hour().minute().locale(Locale(identifier: "zh_Hans_CN")))) + Text("记录")
         }
         return title
     }
@@ -122,7 +122,7 @@ struct PulseWidgetContent: View {
     }
     private func ageLine(_ date: Date) -> some View {
         HStack(spacing: 2) {
-            Text(date, format: .dateTime.hour().minute().locale(Locale(identifier: "zh_Hans_CN"))).monospacedDigit()
+            Text(date.formatted(.dateTime.hour().minute().locale(Locale(identifier: "zh_Hans_CN")))).monospacedDigit()
             Text("记录")
         }.foregroundStyle(.secondary).lineLimit(1).minimumScaleFactor(0.8)
     }
