@@ -50,7 +50,7 @@ import WellnessServices
                             .font(.caption).foregroundStyle(.secondary)
                     }
                 }
-                DisclosureGroup("查看原始记录与比较依据") {
+                CPTrendDisclosure(title: "查看原始记录与比较依据") {
                 CPTrendCard {
                     CPTrendSectionTitle(title: "记录覆盖", symbol: "calendar.badge.checkmark")
                     CPTrendCoverageView(coverage: report.coverage)
@@ -899,6 +899,27 @@ private enum CPTrendFormat {
         case .highIntensityIntervalTraining: return "高强度间歇训练"
         case .other: return "运动"
         default: return "运动（类型 \(type)）"
+        }
+    }
+}
+
+/// DisclosureGroup is unavailable on watchOS; this explicit button works on both surfaces.
+private struct CPTrendDisclosure<Content: View>: View {
+    let title: String
+    @ViewBuilder var content: Content
+    @State private var expanded = false
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Button { expanded.toggle() } label: {
+                HStack {
+                    Text(title).font(.subheadline.weight(.semibold))
+                    Spacer()
+                    Image(systemName: expanded ? "chevron.up" : "chevron.down").font(.caption)
+                }.padding(.vertical, 10)
+            }
+            .buttonStyle(.plain)
+            .accessibilityValue(expanded ? "已展开" : "已收起")
+            if expanded { content }
         }
     }
 }

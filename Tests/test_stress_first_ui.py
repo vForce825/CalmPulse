@@ -24,3 +24,8 @@ class StressFirstContracts(unittest.TestCase):
         source=(ROOT/'Apps/UI/CommonViews.swift').read_text().split('struct ReadingView: View')[1].split('struct HabitEditor')[0]
         self.assertIn('StressPresentation(', source)
         self.assertNotIn('summary.assessment.band?.title', source)
+
+    def test_shared_trend_details_use_watch_compatible_disclosure(self):
+        source=(ROOT/'Apps/UI/TrendViews.swift').read_text()
+        self.assertNotIn('DisclosureGroup(', source)
+        self.assertIn('CPTrendDisclosure(', source)
