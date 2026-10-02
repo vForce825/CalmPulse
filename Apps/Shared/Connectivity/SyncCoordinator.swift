@@ -11,6 +11,9 @@ public struct SyncEnvelope: Codable, Equatable, Sendable {
         self.schemaVersion = schemaVersion; self.sourceDevice = sourceDevice; self.settings = settings; self.summary = summary; self.habitChanges = habitChanges
     }
 }
+public extension SyncEnvelope {
+    func isEquivalent(to data: Data) -> Bool { (try? JSONDecoder().decode(Self.self, from: data)) == self }
+}
 public struct MergeResult: Sendable { public var changed: Bool }
 public actor SyncCoordinator {
     private let store: HistoryStore
@@ -21,12 +24,25 @@ public actor SyncCoordinator {
             var changed = false
             if envelope.sourceDevice == .iPhone, let settings = envelope.settings,
                settings.revision >= state.settings.revision, settings != state.settings {
-                state.settings = settings; changed = true
+                let localSource = state.settings.selectedSourceID
+                state.settings = settings; state.settings.selectedSourceID = localSource
+                state.summary?.hideValues = settings.hideWidgetValues; state.peerSummary?.hideValues = settings.hideWidgetValues
+                changed = true
             }
-            if let summary = envelope.summary,
-               summary.assessment.version == "wellness-sdnn-v1",
-               summary.assessment.observedAt > (state.summary?.assessment.observedAt ?? .distantPast) {
-                state.summary = summary; changed = true
+            if var summary = envelope.summary,
+               summary.assessment.version == "wellness-sdnn-v1", summary.sdnn.isFinite, summary.sdnn > 0,
+               summary.assessment.observedAt.timeIntervalSince1970.isFinite, summary.assessment.observedAt <= Date(),
+               summary.generatedAt.timeIntervalSince1970.isFinite, summary.generatedAt <= Date(),
+               !state.deletedHealthIDs.contains(summary.assessment.sampleID),
+               summary.assessment.score.map({ (0...100).contains($0) }) ?? true {
+                let newer = state.peerSummary.map {
+                    summary.assessment.observedAt > $0.assessment.observedAt ||
+                    (summary.assessment.observedAt == $0.assessment.observedAt && summary.generatedAt > $0.generatedAt)
+                } ?? true
+                if newer {
+                    summary.hideValues = state.settings.hideWidgetValues
+                    state.peerSummary = summary; changed = true
+                }
             }
             for entry in envelope.habitChanges {
                 if let index = state.habits.firstIndex(where: { $0.id == entry.id }) {

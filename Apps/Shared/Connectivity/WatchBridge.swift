@@ -24,7 +24,7 @@ public final class WatchBridge: NSObject, WCSessionDelegate, @unchecked Sendable
               let data = try? JSONEncoder().encode(envelope), data.count < 60_000 else { return false }
         let session = WCSession.default
         // Identical queued state is already durable; do not grow the offline queue on every foreground refresh.
-        if session.outstandingUserInfoTransfers.contains(where: { ($0.userInfo["payload"] as? Data) == data }) { return true }
+        if session.outstandingUserInfoTransfers.contains(where: { ($0.userInfo["payload"] as? Data).map { envelope.isEquivalent(to: $0) } ?? false }) { return true }
         guard session.outstandingUserInfoTransfers.count < 64 else { return false }
         session.transferUserInfo(["payload": data, "attempt": 0])
         return true

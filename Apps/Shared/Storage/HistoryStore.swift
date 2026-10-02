@@ -9,6 +9,8 @@ public struct StoredSnapshot: Codable, Sendable {
     public var assessments: [WellnessAssessment] = []
     public var settings = AppSettings()
     public var summary: StoredSummary?
+    public var peerSummary: StoredSummary?
+    public var deletedHealthIDs: Set<UUID> = []
     public var breathing = BreathingSession()
     public var deliveredSampleIDs: Set<UUID> = []
     public var lastNotificationAt: Date?
@@ -21,16 +23,19 @@ public actor HistoryStore {
     public init(directory: URL, isAvailable: @escaping @Sendable () -> Bool = { true }) {
         self.directory = directory; self.isAvailable = isAvailable
     }
-    public func apply(_ changes: HealthChanges) async throws {
+    public func apply(_ changes: HealthChanges, replacingKind: Bool = false) async throws {
         var state = try load()
+        if replacingKind { state.samples.removeAll { $0.kind == changes.kind } }
         let deleted = Set(changes.deletedIDs)
+        state.deletedHealthIDs.formUnion(deleted)
+        if let peer = state.peerSummary, deleted.contains(peer.assessment.sampleID) { state.peerSummary = nil }
         var samples = Dictionary(state.samples.map { ($0.id, $0) }, uniquingKeysWith: { _,new in new })
         for id in deleted { samples.removeValue(forKey: id) }
         for sample in changes.inserted where !deleted.contains(sample.id) { samples[sample.id] = sample }
         state.samples = samples.values.sorted { $0.start < $1.start }
         state.anchors[changes.kind] = changes.newAnchor
         // A deletion can change every percentile baseline, not just the deleted input's score.
-        if !changes.deletedIDs.isEmpty { state.assessments = []; state.summary = nil }
+        if replacingKind || !changes.deletedIDs.isEmpty { state.assessments = []; state.summary = nil }
         try save(state)
     }
     public func upsertHabit(_ entry: HabitEntry) async throws {
@@ -51,7 +56,7 @@ public actor HistoryStore {
     }
     public func clearLocalData() async throws {
         let old = try load()
-        var state = StoredSnapshot(); state.settings = old.settings
+        var state = StoredSnapshot(); state.settings = old.settings; state.deletedHealthIDs = old.deletedHealthIDs
         // Retain content-free tombstones so an offline watch cannot restore a cleared log.
         state.habits = old.habits.map {
             HabitEntry(id: $0.id, kind: $0.kind, timestamp: $0.timestamp, value: nil, note: nil,
@@ -70,7 +75,10 @@ public actor HistoryStore {
         }
         cached = state; return state
     }
-    private func save(_ state: StoredSnapshot) throws {
+    private func save(_ incoming: StoredSnapshot) throws {
+        var state = incoming
+        state.summary?.hideValues = state.settings.hideWidgetValues
+        state.peerSummary?.hideValues = state.settings.hideWidgetValues
         guard isAvailable() else { throw StorageError.protectedDataUnavailable }
         try ProtectedFile.write(JSONEncoder().encode(state), to: directory.appendingPathComponent("history.json"))
         cached = state

@@ -1,15 +1,13 @@
 import SwiftUI
 import WidgetKit
-struct PulseEntry: TimelineEntry { let date: Date }
-struct PulseProvider: TimelineProvider {
-    func placeholder(in context: Context) -> PulseEntry { PulseEntry(date: .now) }
-    func getSnapshot(in context: Context, completion: @escaping (PulseEntry) -> Void) { completion(PulseEntry(date: .now)) }
-    func getTimeline(in context: Context, completion: @escaping (Timeline<PulseEntry>) -> Void) { completion(Timeline(entries: [PulseEntry(date: .now)], policy: .never)) }
-}
+
 @main struct CalmPulseWidget: Widget {
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: "CalmPulse", provider: PulseProvider()) { _ in
-            Text("暂未读到记录").privacySensitive().containerBackground(.fill.tertiary, for: .widget)
-        }.configurationDisplayName("CalmPulse").description("本地健康趋势与数据年龄")
+        StaticConfiguration(kind: "CalmPulse", provider: PulseTimelineProvider()) { entry in
+            PulseWidgetView(entry: entry)
+        }
+        .configurationDisplayName("CalmPulse · 本机趋势")
+        .description("查看SDNN与采集时间。数值默认隐藏，三小时后标记为历史读数。")
+        .supportedFamilies([.systemSmall, .systemMedium, .accessoryCircular, .accessoryRectangular, .accessoryInline])
     }
 }

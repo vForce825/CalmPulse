@@ -9,6 +9,7 @@ public struct NotificationPolicy: Sendable {
         guard (0...23).contains(settings.quietStartHour), (0...23).contains(settings.quietEndHour), now.timeIntervalSince1970.isFinite else {
             return .suppress(.invalidSettings)
         }
+        if let lastSentAt, !lastSentAt.timeIntervalSince1970.isFinite { return .suppress(.invalidSettings) }
         let hour = calendar.component(.hour, from: now)
         let start = settings.quietStartHour, end = settings.quietEndHour
         let quiet = start > end ? (hour >= start || hour < end) : (hour >= start && hour < end)

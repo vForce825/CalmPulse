@@ -21,10 +21,11 @@ targets:
   CalmPulse-iOS:
     type: application
     platform: iOS
-    sources: [Apps/iOS]
+    sources: [Apps/iOS, Apps/UI]
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.vforce825.calmpulse
+        CODE_SIGN_ENTITLEMENTS: Apps/iOS/CalmPulse.entitlements
         TARGETED_DEVICE_FAMILY: 1
         INFOPLIST_KEY_CFBundleDisplayName: CalmPulse
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
@@ -39,10 +40,11 @@ targets:
   CalmPulse-Watch:
     type: application
     platform: watchOS
-    sources: [Apps/Watch]
+    sources: [Apps/Watch, Apps/UI]
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.vforce825.calmpulse.watch
+        CODE_SIGN_ENTITLEMENTS: Apps/Watch/CalmPulse.entitlements
         INFOPLIST_KEY_CFBundleDisplayName: CalmPulse
         INFOPLIST_KEY_WKApplication: YES
         INFOPLIST_KEY_WKCompanionAppBundleIdentifier: com.vforce825.calmpulse
@@ -55,7 +57,7 @@ targets:
   CalmPulse-iOSWidgets:
     type: app-extension
     platform: iOS
-    sources: [Apps/iOSWidgets]
+    sources: [Apps/iOSWidgets, Apps/WidgetShared]
     info:
       path: Apps/iOSWidgets/Info.plist
       properties:
@@ -64,6 +66,7 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.vforce825.calmpulse.widgets
+        CODE_SIGN_ENTITLEMENTS: Apps/iOSWidgets/CalmPulse.entitlements
         APPLICATION_EXTENSION_API_ONLY: YES
     dependencies:
       - package: WellnessCore
@@ -71,7 +74,7 @@ targets:
   CalmPulse-WatchWidgets:
     type: app-extension
     platform: watchOS
-    sources: [Apps/WatchWidgets]
+    sources: [Apps/WatchWidgets, Apps/WidgetShared]
     info:
       path: Apps/WatchWidgets/Info.plist
       properties:
@@ -80,6 +83,7 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.vforce825.calmpulse.watch.widgets
+        CODE_SIGN_ENTITLEMENTS: Apps/WatchWidgets/CalmPulse.entitlements
         APPLICATION_EXTENSION_API_ONLY: YES
     dependencies:
       - package: WellnessCore

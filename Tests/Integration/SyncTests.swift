@@ -12,7 +12,7 @@ final class SyncTests: XCTestCase, @unchecked Sendable {
         let first = try await sync.merge(envelope); XCTAssertTrue(first.changed)
         let replay = try await sync.merge(envelope); XCTAssertFalse(replay.changed)
         _ = try await sync.merge(SyncEnvelope(sourceDevice: .watch, summary: summary(.distantPast)))
-        let state = try await store.snapshot(); XCTAssertEqual(state.summary, fresh)
+        let state = try await store.snapshot(); XCTAssertEqual(state.peerSummary, fresh)
     }
     func testPhoneSettingsAuthoritativeAndUnknownSchemaRejected() async throws {
         let store = store(); let sync = SyncCoordinator(store: store)

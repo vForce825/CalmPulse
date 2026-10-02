@@ -37,11 +37,9 @@ public enum SampleNormalizer {
         let source = sample.sourceRevision.source
         let device = sample.device
         let product = sample.sourceRevision.productType ?? "unknown"
-        let fallback = [source.name, device?.name ?? "", product].joined(separator: "|")
-        let identity = device?.localIdentifier ?? fallback
         let isWatch = product.lowercased().contains("watch") || (device?.model?.lowercased().contains("watch") ?? false)
-        let sourceName = source.name + (device?.localIdentifier == nil ? " · 来源身份受系统信息限制" : "")
-        return HealthSample(id: sample.uuid, kind: kind, sourceID: source.bundleIdentifier + "|" + identity,
+        let sourceName = source.name + (device?.localIdentifier == nil ? " · 设备身份不可确认，不合并基线" : "")
+        return HealthSample(id: sample.uuid, kind: kind, sourceID: SourceIdentity.key(bundle: source.bundleIdentifier, localDeviceID: device?.localIdentifier, sampleID: sample.uuid),
             start: sample.startDate, end: sample.endDate, value: value, sleepStage: stage,
             sourceName: sourceName, workoutType: workoutType, isAppleWatch: isWatch)
     }

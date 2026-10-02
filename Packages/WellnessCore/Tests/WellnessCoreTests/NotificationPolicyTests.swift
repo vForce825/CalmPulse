@@ -70,4 +70,8 @@ final class NotificationPolicyTests: XCTestCase {
         }
         XCTAssertTrue(decision(samples, now: date, calendar: cal).shouldSend)
     }
+    func testMalformedLastDeliveryTimeCannotQualify() {
+        XCTAssertEqual(decision(lastSent: Date(timeIntervalSince1970: .nan)), .suppress(.invalidSettings))
+    }
+
 }

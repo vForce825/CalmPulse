@@ -15,8 +15,9 @@ public struct StoredSummary: Codable, Equatable, Sendable {
     public var assessment: WellnessAssessment
     public var sdnn: Double
     public var sourceDevice: String
+    public var generatedAt: Date
     public var hideValues: Bool
-    public init(assessment: WellnessAssessment, sdnn: Double, sourceDevice: String, hideValues: Bool = true) {
-        self.assessment = assessment; self.sdnn = sdnn; self.sourceDevice = sourceDevice; self.hideValues = hideValues
+    public init(assessment: WellnessAssessment, sdnn: Double, sourceDevice: String, hideValues: Bool = true, generatedAt: Date = .now) {
+        self.assessment = assessment; self.sdnn = sdnn; self.sourceDevice = sourceDevice; self.hideValues = hideValues; self.generatedAt = generatedAt
     }
 }

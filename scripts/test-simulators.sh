@@ -12,4 +12,10 @@ for runtime, devices in json.load(open('/tmp/calmpulse-devices.json'))['devices'
 raise SystemExit('No available iPhone iOS27 simulator')
 PY
 )
-xcodebuild -project CalmPulse.xcodeproj -scheme CalmPulse-iOS -destination "platform=iOS Simulator,id=$IOS_ID" -parallel-testing-enabled NO CODE_SIGNING_ALLOWED=NO test
+xcrun simctl boot "$IOS_ID" 2>/dev/null || true
+xcrun simctl bootstatus "$IOS_ID" -b
+set +e
+xcodebuild -project CalmPulse.xcodeproj -scheme CalmPulse-iOS -destination "platform=iOS Simulator,id=$IOS_ID" -parallel-testing-enabled NO -collect-test-diagnostics never -test-timeouts-enabled YES -default-test-execution-time-allowance 120 -maximum-test-execution-time-allowance 300 -resultBundlePath /tmp/CalmPulseTests.xcresult CODE_SIGNING_ALLOWED=NO test
+status=$?
+xcrun xcresulttool get test-results summary --path /tmp/CalmPulseTests.xcresult || true
+exit "$status"
