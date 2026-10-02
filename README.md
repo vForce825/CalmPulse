@@ -2,7 +2,7 @@
 
 A Chinese-first, local-first **iOS 27 / watchOS 27** wellness app with an explainable personal SDNN scale. Original code is MIT licensed; this is independent of StressWatch and does not reproduce its proprietary algorithm or assets.
 
-**Development verification is in progress.** Unsigned simulator builds are not signed, installable device releases. See [Actions](https://github.com/vForce825/CalmPulse/actions) for the exact commit being checked and [device checklist](docs/device-checklist.md) for remaining hardware gates.
+**Automated simulator verification passed.** [Verified implementation 59690d1](https://github.com/vForce825/CalmPulse/actions/runs/37006610791) passed the Xcode 27 platform/build/test gates. See the [verification report](docs/verification.md) for counts and scope. Unsigned simulator builds are not installable device releases; [hardware checks](docs/device-checklist.md) remain.
 
 ## Included
 

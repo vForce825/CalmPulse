@@ -7,7 +7,9 @@ Minimum supported deployment: iOS 27 / watchOS 27. Required SDK/runtime gate is 
 - Service tests: protected/unavailable store semantics, UUID upserts and deletion, anchors, tombstones, settings authority, peer isolation, widget age and hidden values, durable notification idempotence, local habit actions
 - Unsigned iOS/watchOS applications and both WidgetKit extensions
 - iPhone UI: no-data onboarding, destructive-clear cancellation, local habit create/edit/delete, ranges and navigation
-- Widget layouts and watch simulator UI must be checked separately from portable logic
+- Shared production widget-content galleries and Watch simulator home launched and were visually inspected; this does not verify live WidgetKit delivery
+
+The completed run and exact results are in [verification.md](verification.md).
 
 ## Required real-device checks (not yet performed)
 - HealthKit read authorization, partial/empty data and source identity across watch replacement
