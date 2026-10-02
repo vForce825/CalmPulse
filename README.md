@@ -2,7 +2,7 @@
 
 A Chinese-first, local-first **iOS 27 / watchOS 27** wellness app that puts a plain-language pressure reference first, with an explainable personal SDNN scale behind the detail view. Original code is MIT licensed; this is independent of StressWatch and does not reproduce its proprietary algorithm or assets.
 
-**Previous implementation simulator verification:** [Verified implementation 59690d1](https://github.com/vForce825/CalmPulse/actions/runs/37006610791) passed the Xcode 27 platform/build/test gates. See the [verification report](docs/verification.md) for counts and scope. Unsigned simulator builds are not installable device releases; [hardware checks](docs/device-checklist.md) remain.
+**Stress-first redesign simulator verification passed.** [Verified implementation 27c0031](https://github.com/vForce825/CalmPulse/actions/runs/37021307483) passed the Xcode 27 platform/build/test gates. See the [verification report](docs/verification.md) for counts and scope. Unsigned simulator builds are not installable device releases; [hardware checks](docs/device-checklist.md) remain.
 
 ## Included
 
