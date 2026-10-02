@@ -1,4 +1,4 @@
-#if canImport(UserNotifications)
+#if os(iOS) || os(watchOS)
 @preconcurrency import UserNotifications
 import Foundation
 public struct SystemNotificationClient: NotificationClient {
