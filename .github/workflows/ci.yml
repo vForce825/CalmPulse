@@ -24,6 +24,8 @@ jobs:
         run: python3 -m unittest discover -s Tests -p 'test_*.py'
       - name: Pure Swift tests
         run: swift test --package-path Packages/WellnessCore
+      - name: Service tests
+        run: swift test
       - name: Generate project
         run: bash scripts/generate-project.sh
       - name: Build all targets unsigned
@@ -31,3 +33,5 @@ jobs:
           xcodebuild -list -project CalmPulse.xcodeproj
           xcodebuild -project CalmPulse.xcodeproj -scheme CalmPulse-iOS -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build
           xcodebuild -project CalmPulse.xcodeproj -scheme CalmPulse-Watch -destination 'generic/platform=watchOS Simulator' CODE_SIGNING_ALLOWED=NO build
+      - name: iPhone integration and UI tests
+        run: bash scripts/test-simulators.sh
