@@ -1,0 +1,9 @@
+.DS_Store
+.build/
+DerivedData/
+.superpowers/
+.worktrees/
+*.xcuserstate
+xcuserdata/
+
+__pycache__/

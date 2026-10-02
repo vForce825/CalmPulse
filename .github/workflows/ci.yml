@@ -1,0 +1,33 @@
+name: CalmPulse unsigned verification
+"on":
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: calmpulse-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  verify:
+    runs-on: xcode-27
+    timeout-minutes: 30
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_27.app/Contents/Developer
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          persist-credentials: false
+      - name: Platform gate
+        run: bash scripts/verify-platform.sh
+      - name: Configuration tests
+        run: python3 -m unittest discover -s Tests -p 'test_*.py'
+      - name: Pure Swift tests
+        run: swift test --package-path Packages/WellnessCore
+      - name: Generate project
+        run: bash scripts/generate-project.sh
+      - name: Build all targets unsigned
+        run: |
+          xcodebuild -list -project CalmPulse.xcodeproj
+          xcodebuild -project CalmPulse.xcodeproj -scheme CalmPulse-iOS -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build
+          xcodebuild -project CalmPulse.xcodeproj -scheme CalmPulse-Watch -destination 'generic/platform=watchOS Simulator' CODE_SIGNING_ALLOWED=NO build

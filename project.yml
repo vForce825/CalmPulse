@@ -1,0 +1,97 @@
+name: CalmPulse
+options:
+  bundleIdPrefix: com.vforce825.calmpulse
+  deploymentTarget:
+    iOS: "27.0"
+    watchOS: "27.0"
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    SWIFT_STRICT_CONCURRENCY: complete
+    CODE_SIGNING_ALLOWED: NO
+    GENERATE_INFOPLIST_FILE: YES
+    CURRENT_PROJECT_VERSION: 1
+    MARKETING_VERSION: "1.0"
+packages:
+  WellnessCore:
+    path: Packages/WellnessCore
+targets:
+  CalmPulse-iOS:
+    type: application
+    platform: iOS
+    sources: [Apps/iOS]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.vforce825.calmpulse
+        TARGETED_DEVICE_FAMILY: 1
+        INFOPLIST_KEY_CFBundleDisplayName: CalmPulse
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        INFOPLIST_KEY_NSHealthShareUsageDescription: 读取健康记录以在设备上展示个人SDNN趋势。所有处理保留在本机。
+    dependencies:
+      - package: WellnessCore
+      - target: CalmPulse-Watch
+        embed: true
+      - target: CalmPulse-iOSWidgets
+        embed: true
+  CalmPulse-Watch:
+    type: application
+    platform: watchOS
+    sources: [Apps/Watch]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.vforce825.calmpulse.watch
+        INFOPLIST_KEY_CFBundleDisplayName: CalmPulse
+        INFOPLIST_KEY_WKApplication: YES
+        INFOPLIST_KEY_WKCompanionAppBundleIdentifier: com.vforce825.calmpulse
+        INFOPLIST_KEY_NSHealthShareUsageDescription: 读取健康记录以在手表本地展示SDNN与个人健康趋势。
+    dependencies:
+      - package: WellnessCore
+      - target: CalmPulse-WatchWidgets
+        embed: true
+  CalmPulse-iOSWidgets:
+    type: app-extension
+    platform: iOS
+    sources: [Apps/iOSWidgets]
+    info:
+      path: Apps/iOSWidgets/Info.plist
+      properties:
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.vforce825.calmpulse.widgets
+        APPLICATION_EXTENSION_API_ONLY: YES
+    dependencies:
+      - package: WellnessCore
+  CalmPulse-WatchWidgets:
+    type: app-extension
+    platform: watchOS
+    sources: [Apps/WatchWidgets]
+    info:
+      path: Apps/WatchWidgets/Info.plist
+      properties:
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.vforce825.calmpulse.watch.widgets
+        APPLICATION_EXTENSION_API_ONLY: YES
+    dependencies:
+      - package: WellnessCore
+schemes:
+  CalmPulse-iOS:
+    build:
+      targets:
+        CalmPulse-iOS: all
+  CalmPulse-Watch:
+    build:
+      targets:
+        CalmPulse-Watch: all
+  CalmPulse-iOSWidgets:
+    build:
+      targets:
+        CalmPulse-iOSWidgets: all
+  CalmPulse-WatchWidgets:
+    build:
+      targets:
+        CalmPulse-WatchWidgets: all
